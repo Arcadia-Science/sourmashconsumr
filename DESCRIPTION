@@ -1,0 +1,14 @@
+Package: sourmashRutils
+Type: Package
+Title: Working with the Outputs of Sourmash in R
+Version: 0.1.0
+Author: Taylor Reiter
+Maintainer: Taylor Reiter
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
