@@ -19,6 +19,12 @@ test_that("check that column names are the same as rownames for read_compare_csv
 
 # test read_taxonomy_annotate ---------------------------------------------
 
-test_that("check that", {
+test_that("check that read_taxonomy_annotate reads single files", {
+  df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
+  expect_equal(nrow(df_many), 177)
+})
 
+test_that("check that read_taxonomy_annotate reads many files", {
+  df_one <- read_taxonomy_annotate("SRR19888423ass-vs-genbank-2022.03-k31.with-lineages-head23.csv")
+  expect_equal(nrow(df_one), 22)
 })
