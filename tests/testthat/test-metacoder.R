@@ -1,0 +1,17 @@
+test_that("test that specifying no taxonomy_annotate_tibble or file fails with exit code", {
+  expect_error(taxonomy_annotate_to_metacoder(), regexp = "Neither taxonomy_annotate_tibble or file were specified. Please specify either taxonomy_annotate_tibble or file and retry.")
+})
+
+test_that("test that user can specify groups with a data frame", {
+  run_accessions <- c("SRR5936131", "SRR5947006", "SRR5935765",
+                      "SRR5936197", "SRR5946923", "SRR5946920")
+  groups <- c("cd", "cd", "cd", "nonibd", "nonibd", "nonibd")
+  groups_df <- data.frame(run_accessions, groups)
+  expect_message(taxonomy_annotate_to_metacoder(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"),
+                                                groups = groups_df),
+                 regexp = "Calculating number of samples with a value greater than 0 for 6 columns in 2 groups for 701 observations")
+})
+
+test_that("test that to metacoder works with genbank database", {
+  expect_message(taxonomy_annotate_to_metacoder(file = Sys.glob("*genbank*.with-lineages*.csv")), regexp = "Calculating number of samples with a value greater than 0 for 4 columns for 162 observations")
+})

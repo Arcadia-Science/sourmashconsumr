@@ -50,7 +50,7 @@ read_compare_csv <- function(file, sample_to_rownames = F, ...){
 #' @param intersect_bp_threshold Integer. Gather matches must have an intersect_bp greater than or equal to this value.
 #' @param ... Arguments passed to read_csv().
 #'
-#' @return
+#' @return A tibble.
 #' @export
 #'
 #' @examples
@@ -133,10 +133,12 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
     taxonomy_annotate_df <- file %>%
       purrr::map_dfr(readr::read_csv, col_types = "ddddddddcccddddcccddcddlddddlc", ...) %>%
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers
       dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
   } else if(length(files) == 1){
     taxonomy_annotate_df <- readr::read_csv(file, col_types = "ddddddddcccddddcccddcddlddddlc", ...) %>%
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers
       dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
   }
   if(separate_lineage == T){
