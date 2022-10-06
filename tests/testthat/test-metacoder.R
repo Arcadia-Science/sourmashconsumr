@@ -15,3 +15,16 @@ test_that("test that user can specify groups with a data frame", {
 test_that("test that to metacoder works with genbank database", {
   expect_message(taxonomy_annotate_to_metacoder(file = Sys.glob("*genbank*.with-lineages*.csv")), regexp = "Calculating number of samples with a value greater than 0 for 4 columns for 162 observations")
 })
+
+test_that("test that to metacoder fails when an unrecognized level of taxonomy is used", {
+  expect_error(taxonomy_annotate_to_metacoder(file = Sys.glob("*genbank*.with-lineages*.csv"),
+                                                summary_level = "kingdom"),
+                 regexp = "Unrecognized string passed to summary_level. Please use one of species, genus, family, order, class, phylum, or domain.")
+})
+
+
+test_that("test that to metacoder works when given a valid taxonomic level", {
+  expect_message(taxonomy_annotate_to_metacoder(file = Sys.glob("*genbank*.with-lineages*.csv"),
+                                                summary_level = "order"),
+               regexp = "Summing per-taxon counts from 4 columns for 27 taxa")
+})

@@ -2,14 +2,13 @@
 % Please edit documentation in R/metacoder.R
 \name{taxonomy_annotate_to_metacoder}
 \alias{taxonomy_annotate_to_metacoder}
-\title{taxonomy_annotate_to_metacoder}
+\title{Import the output of sourmash taxonomy annotate into a taxmap metacoder object}
 \usage{
 taxonomy_annotate_to_metacoder(
   taxonomy_annotate_tibble = NULL,
   file = NULL,
   intersect_bp_threshold = 50000,
-  summary_level = c(NULL, "domain", "phylum", "class", "order", "family", "genus",
-    "species"),
+  summary_level = NULL,
   groups = NULL,
   groups_prefix = "x",
   ...
@@ -22,7 +21,7 @@ taxonomy_annotate_to_metacoder(
 
 \item{intersect_bp_threshold}{Integer. Gather matches must have an intersect_bp greater than or equal to this value.}
 
-\item{summary_level}{Character.}
+\item{summary_level}{Character. NULL by default, meaning no summarization is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level before metacoder object is created.}
 
 \item{groups}{A tibble or data.frame with distinct query_name values from taxonomy_annotate_tibble in the first column and query groups in the second column.}
 
@@ -34,7 +33,7 @@ taxonomy_annotate_to_metacoder(
 A metacoder taxmap object.
 }
 \description{
-taxonomy_annotate_to_metacoder
+Import the output of sourmash taxonomy annotate into a taxmap metacoder object
 }
 \examples{
 taxonomy_annotate_to_metacoder()

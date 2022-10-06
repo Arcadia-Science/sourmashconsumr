@@ -1,4 +1,4 @@
-#' read_compare_csv
+#' Read a CSV file output by sourmash compare
 #'
 #' @param file path to file output by sourmash compare using the with the --csv flag
 #' @param sample_to_rownames Boolean indicating whether sample names should be added to the tibble as a column or a rowname
@@ -44,7 +44,7 @@ read_compare_csv <- function(file, sample_to_rownames = F, ...){
   return(compare_df)
 }
 
-#' read gather
+#' Read CSV file or files output by sourmash gather
 #'
 #' @param file Path to CSV file or files output by sourmash gather.
 #' @param intersect_bp_threshold Integer. Gather matches must have an intersect_bp greater than or equal to this value.
@@ -70,7 +70,7 @@ read_gather <- function(file, intersect_bp_threshold, ...){
     )
   }
 
-  if(length(files) > 1){
+  if(length(file) > 1){
 
     if (!requireNamespace("purrr", quietly = TRUE)) {
       stop(
@@ -85,7 +85,7 @@ read_gather <- function(file, intersect_bp_threshold, ...){
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
       dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
 
-  } else if(length(files) == 1){
+  } else if(length(file) == 1){
     taxonomy_annotate_df <- readr::read_csv(file, col_types = "ddddddddcccddddcccddcddlddddl", ...) %>%
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
       dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
@@ -93,7 +93,7 @@ read_gather <- function(file, intersect_bp_threshold, ...){
 }
 
 
-#' read_taxonomy_annotate
+#' Read CSV file or files output by sourmash taxonomy annotate
 #'
 #' @param file Path to CSV file or files output by sourmash taxonomy annotate.
 #' @param intersect_bp_threshold Integer. Gather matches must have an intersect_bp greater than or equal to this value.
@@ -120,7 +120,7 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
     )
   }
 
-  if(length(files) > 1){
+  if(length(file) > 1){
 
     if (!requireNamespace("purrr", quietly = TRUE)) {
       stop(
@@ -135,7 +135,7 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
       dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers
       dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
-  } else if(length(files) == 1){
+  } else if(length(file) == 1){
     taxonomy_annotate_df <- readr::read_csv(file, col_types = "ddddddddcccddddcccddcddlddddlc", ...) %>%
       dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
       dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers

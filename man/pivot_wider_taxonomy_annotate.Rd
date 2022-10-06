@@ -2,7 +2,7 @@
 % Please edit documentation in R/metacoder.R
 \name{pivot_wider_taxonomy_annotate}
 \alias{pivot_wider_taxonomy_annotate}
-\title{Title}
+\title{Pivot sourmash_taxonomy_results to wide format}
 \usage{
 pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
 }
@@ -13,8 +13,8 @@ pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
 A tibble in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 }
 \description{
-Title
+Pivot sourmash_taxonomy_results to wide format
 }
 \examples{
-pivot_wider_taxonomy_annoate(taxonomy_annotate_tibble)
+pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
 }
