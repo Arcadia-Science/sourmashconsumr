@@ -12,7 +12,7 @@ read_taxonomy_annotate(
 )
 }
 \arguments{
-\item{file}{Path to file or files output by sourmash taxonomy annotate}
+\item{file}{Path to CSV file or files output by sourmash taxonomy annotate.}
 
 \item{intersect_bp_threshold}{Integer. Gather matches must have an intersect_bp greater than or equal to this value.}
 
