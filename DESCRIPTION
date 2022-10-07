@@ -16,6 +16,7 @@ RoxygenNote: 7.2.1
 Imports: 
     dplyr,
     magrittr,
+    metacoder,
     purrr,
     readr,
     tidyr
