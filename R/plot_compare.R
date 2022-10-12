@@ -9,13 +9,6 @@
 check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
   # check if compare tibble was read in with sample names as a column
   if("sample" %in% colnames(compare_df)){
-    # guard against missing pkg installations
-    if (!requireNamespace("tibble", quietly = TRUE)) {
-      stop(
-        "Package \"tibble\" must be installed to make sample names into row names. Please install \"tibble\".",
-        call. = FALSE
-      )
-    }
     # move sample column to rownames
     compare_df <- compare_df %>%
       tibble::column_to_rownames("sample")
@@ -33,21 +26,6 @@ check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
 #'
 #' @examples
 make_compare_mds <- function(compare_df){
-  # guard against missing pkg installations
-  if (!requireNamespace("tibble", quietly = TRUE)) {
-    stop(
-      "Package \"tibble\" must be installed to run make_compare_mds(). Please install \"tibble\".",
-      call. = FALSE
-    )
-  }
-
-  if (!requireNamespace("dplyr", quietly = TRUE)) {
-    stop(
-      "Package \"dplyr\" must be installed to run make_compare_mds(). Please install \"dplyr\".",
-      call. = FALSE
-    )
-  }
-
   # check if compare tibble was read in with sample names as a column
   compare_df <- check_compare_df_sample_col_and_move_to_rowname(compare_df)
 
@@ -71,13 +49,6 @@ make_compare_mds <- function(compare_df){
 #'
 #' @examples
 plot_compare_mds <- function(compare_mds){
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop(
-      "Package \"ggplot2\" must be installed to make an MDS plot. Please install \"ggplot2\".",
-      call. = FALSE
-    )
-  }
-
   ggplot2::ggplot(compare_mds, ggplot2::aes(x = MDS1, y = MDS2, label = sample)) +
     ggplot2::geom_point() +
     #geom_label_repel() +
