@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(sourmashRutils)
+library(sourmashconsumr)
 
-test_check("sourmashRutils")
+test_check("sourmashconsumr")

@@ -1,4 +1,4 @@
-Package: sourmashRutils
+Package: sourmashconsumr
 Type: Package
 Title: Working with the Outputs of Sourmash in R
 Version: 0.1.0
