@@ -34,20 +34,6 @@ taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_tibble = NULL,
                                            groups = NULL,
                                            groups_prefix = "x",
                                            ...){
-  # guard against missing packages
-  if (!requireNamespace("dplyr", quietly = TRUE)) {
-    stop(
-      "Package \"dplyr\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-
-  if (!requireNamespace("metacoder", quietly = TRUE)) {
-    stop(
-      "Package \"metacoder\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
 
   # either take in tibble from read_taxonomy_annotate or read in sourmash taxonomy annotate output file(s) directly
   if(missing(taxonomy_annotate_tibble) & missing(file)){
