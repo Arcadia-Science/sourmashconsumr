@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_sourmash_outputs.R
 \name{read_taxonomy_annotate}
 \alias{read_taxonomy_annotate}
-\title{read_taxonomy_annotate}
+\title{Read CSV file or files output by sourmash taxonomy annotate}
 \usage{
 read_taxonomy_annotate(
   file,
@@ -12,7 +12,7 @@ read_taxonomy_annotate(
 )
 }
 \arguments{
-\item{file}{Path to file or files output by sourmash taxonomy annotate}
+\item{file}{Path to CSV file or files output by sourmash taxonomy annotate.}
 
 \item{intersect_bp_threshold}{Integer. Gather matches must have an intersect_bp greater than or equal to this value.}
 
@@ -24,7 +24,7 @@ read_taxonomy_annotate(
 A tibble.
 }
 \description{
-read_taxonomy_annotate
+Read CSV file or files output by sourmash taxonomy annotate
 }
 \examples{
 read_taxonomy_annotate()

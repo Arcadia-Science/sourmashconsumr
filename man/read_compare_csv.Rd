@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_sourmash_outputs.R
 \name{read_compare_csv}
 \alias{read_compare_csv}
-\title{read_compare_csv}
+\title{Read a CSV file output by sourmash compare}
 \usage{
 read_compare_csv(file, sample_to_rownames = F, ...)
 }
@@ -17,7 +17,7 @@ read_compare_csv(file, sample_to_rownames = F, ...)
 A tibble.
 }
 \description{
-read_compare_csv
+Read a CSV file output by sourmash compare
 }
 \examples{
 read_compare_csv("")
