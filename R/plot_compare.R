@@ -19,12 +19,13 @@ check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
 
 #' Perform an MDS analysis from a sourmash compare output and produce a tidy data.frame
 #'
-#' @param compare_df
+#' @param compare_df A tibble or data.frame produced by read_compare_csv() representing a (dis)similarity matrix output by sourmash compare.
 #'
 #' @return A data.frame.
 #' @export
 #'
 #' @examples
+#' make_compare_mds(compare_df)
 make_compare_mds <- function(compare_df){
   # check if compare tibble was read in with sample names as a column
   compare_df <- check_compare_df_sample_col_and_move_to_rowname(compare_df)
@@ -40,7 +41,7 @@ make_compare_mds <- function(compare_df){
   return(compare_mds)
 }
 
-#' Plot an MDS data.frame produces from the output of sourmash compare
+#' Plot an MDS data.frame produced from the output of sourmash compare
 #'
 #' @param compare_mds A data.frame produced using make_compare_mds()
 #'
@@ -48,16 +49,20 @@ make_compare_mds <- function(compare_df){
 #' @export
 #'
 #' @examples
-plot_compare_mds <- function(compare_mds){
-  ggplot2::ggplot(compare_mds, ggplot2::aes(x = MDS1, y = MDS2, label = sample)) +
+plot_compare_mds <- function(compare_mds, label = TRUE){
+  mds_plt <- ggplot2::ggplot(compare_mds, ggplot2::aes(x = MDS1, y = MDS2, label = sample)) +
     ggplot2::geom_point() +
-    #geom_label_repel() +
     ggplot2::theme_classic()
+
+  if(label == TRUE){
+    mds_plt <- mds_plt +
+      ggrepel::geom_label_repel()
+  }
 }
 
 #' Plot a heatmap from a tibble of sourmash compare results.
 #'
-#' @param compare_df A tibble containing results produced by sourmash.
+#' @param compare_df A tibble or data.frame produced by read_compare_csv() representing a (dis)similarity matrix output by sourmash compare.
 #' @param ... Arguments passed to base::heatmap().
 #'
 #' @return A plot of sourmash compare results.
