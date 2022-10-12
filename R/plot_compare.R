@@ -44,11 +44,13 @@ make_compare_mds <- function(compare_df){
 #' Plot an MDS data.frame produced from the output of sourmash compare
 #'
 #' @param compare_mds A data.frame produced using make_compare_mds()
+#' @param label Boolean controlling whether sample labels are added to the plot. Default TRUE plots labels.
 #'
 #' @return A ggplot2 plot.
 #' @export
 #'
 #' @examples
+#' plot_compare_mds(compare_mds)
 plot_compare_mds <- function(compare_mds, label = TRUE){
   mds_plt <- ggplot2::ggplot(compare_mds, ggplot2::aes(x = MDS1, y = MDS2, label = sample)) +
     ggplot2::geom_point() +
@@ -58,6 +60,8 @@ plot_compare_mds <- function(compare_mds, label = TRUE){
     mds_plt <- mds_plt +
       ggrepel::geom_label_repel()
   }
+
+  return(mds_plt)
 }
 
 #' Plot a heatmap from a tibble of sourmash compare results.
@@ -70,7 +74,10 @@ plot_compare_mds <- function(compare_mds, label = TRUE){
 #'
 #' @examples
 #' plot_compare_heatmap()
-plot_compare_heatmap <- function(compare_df, ...){
+plot_compare_heatmap <- function(compare_df, seed = 42, ...){
+  # set seed so the same visualization is produced each time the code is run
+  set.seed(seed = seed)
+
   # check if compare tibble was read in with sample names as a column
   compare_df <- check_compare_df_sample_col_and_move_to_rowname(compare_df)
 
