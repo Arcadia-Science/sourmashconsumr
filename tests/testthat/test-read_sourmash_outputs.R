@@ -38,3 +38,26 @@ test_that("check that read_taxonomy_annotate reads many files gtdb reps db", {
   df_one <- read_taxonomy_annotate("SRR5947006_gather_gtdbrs207_reps.with-lineages.csv")
   expect_equal(nrow(df_one), 185)
 })
+
+
+# test read_signature -----------------------------------------------------
+
+test_that("read signature works with a signature with only one ksize", {
+
+})
+
+test_that("read signature works when num is specified", {
+
+})
+
+test_that("read signature works when there are no abundances", {
+
+})
+
+test_that("read signature works when the signature is gzipped", {
+
+})
+
+test_that("get_scaled_from_max_hash returns the correct scaled value", {
+
+})
