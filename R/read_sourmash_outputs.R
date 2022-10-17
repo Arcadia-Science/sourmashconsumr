@@ -107,13 +107,21 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #'
 #' @examples
 read_signature <- function(file, compliant = TRUE){
+  stopifnot(file.exists(file)) # stop if the file doesn't exist
   # read in the signature json file to a dataframe and calculcate the scaled value
   sig_df <- jsonlite::fromJSON(file) %>%
     tidyr::unnest(tidyselect::one_of("signatures")) %>%
-    tidyr::unnest(tidyselect::any_of(c("mins", "abundances"))) %>% # any_of allows abundances to be present in signature or not
-    dplyr::mutate(scaled = get_scaled_for_max_hash(max_hash)) # calculate the scaled value from max_hash
+    tidyr::unnest(tidyselect::any_of(c("mins", "abundances"))) # any_of allows abundances to be present in signature or not
 
-  if(compliant = T) {
+  # if max_hash is 0, then num was set
+  # if num was set, scaled does not need to be calculated
+  # max_hash should be the same between all sketches in a sig; I don't think they can be calculated any other way
+  if(unique(sig_df$max_hash) != 0){
+    sig_df <- sig_df %>%
+      dplyr::mutate(scaled = get_scaled_for_max_hash(max_hash)) # calculate the scaled value from max_hash
+  }
+
+  if(compliant == TRUE) {
     # define columns that should be selected if compliant = TRUE
     # these are accurate as of sourmash version 4.
     sourmashv4_sig_fields <- c('class', 'email', 'hash_function', 'filename', 'name',
