@@ -88,6 +88,7 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
 #' @return Integer; a scaled value
 #'
 #' @examples
+#' get_scaled_for_max_hash(184467440737095)
 get_scaled_for_max_hash <- function(sig_max_hash){
   # sourmash uses the 64-bit hash space of MurmurHash only
   # this is 2 ** 64 - 1 in hexadecimal
@@ -99,13 +100,14 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 
 #' Read sourmash signatures into a dataframe
 #'
-#' @param file Path to signature (json) file or files output by sourmash sketch (previously sourmash compute).
+#' @param file Path to signature (json) file output by sourmash sketch (previously sourmash compute).
 #' @param compliant Boolean indicating whether signature columns should be compliant; the json fields changed across versions of sourmash. This may drop deprecated columns like 'type' but will allow you to bind many signatures into a single data frame even if they were sketched with different versions of sourmash.
 #'
 #' @return A tibble.
 #' @export
 #'
 #' @examples
+#' read_signature("tests/testthat/SRR18071810.sig")
 read_signature <- function(file, compliant = TRUE){
   stopifnot(file.exists(file)) # stop if the file doesn't exist
   # read in the signature json file to a dataframe and calculcate the scaled value
