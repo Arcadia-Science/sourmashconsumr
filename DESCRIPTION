@@ -16,6 +16,7 @@ Imports:
     dplyr,
     ggplot2,
     ggrepel,
+    jsonlite,
     magrittr,
     metacoder,
     purrr,
