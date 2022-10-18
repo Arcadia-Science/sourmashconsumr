@@ -2,10 +2,9 @@ Package: sourmashconsumr
 Type: Package
 Title: Working with the Outputs of Sourmash in R
 Version: 0.1.0
-Author: Taylor Reiter
-Maintainer: Taylor Reiter
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: person("Taylor", "Reiter", email = "taylor.reiter@arcadiascience.com",
+  role = c("aut", "cre"))
+Description: An R package to read in, manipulate, and visualize the outputs of sourmash.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,8 +16,10 @@ Imports:
     dplyr,
     ggplot2,
     ggrepel,
+    jsonlite,
     magrittr,
     metacoder,
     purrr,
     readr,
-    tidyr
+    tidyr,
+    tidyselect
