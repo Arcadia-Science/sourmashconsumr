@@ -51,8 +51,7 @@ test_that("from_signatures_to_rarefaction_df runs", {
   expect_equal(max(rarecurve_df$num_kmers_observed), 637)
 })
 
-
-test_that("from_signatures_to_rarefaction_df runs", {
+test_that("plot_signatures_rarefaction produces ggplot with right info", {
   sig_df <- Sys.glob("SRR*ass.sig*") %>%
     purrr::map_dfr(read_signature) %>%
     dplyr::filter(ksize == 21)
@@ -60,4 +59,7 @@ test_that("from_signatures_to_rarefaction_df runs", {
   plt1 <- plot_signatures_rarefaction(rarecurve_df, fraction_of_points_to_plot = 1)
   plt2 <- plot_signatures_rarefaction(rarecurve_df, fraction_of_points_to_plot = 2)
   expect(nrow(plt1$data) > nrow(plt2$data), ok = T) # the data underlying the first plot should have more rows than the second
+  expect_equal(plt1$theme, plt2$theme) # theme should match between plots
+  plt1 <- plt1 + ggplot2::theme_minimal()
+  expect(plt1$theme != plt2$theme, ok = T) # after adding a ggplot layer themes should no longer be equal
 })
