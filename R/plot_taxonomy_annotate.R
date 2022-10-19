@@ -68,8 +68,8 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
 #' @export
 #'
 #' @examples
-from_taxonomy_annotate_to_upset_df <- function(taxonomy_annotate_df,
-                                               tax_glom_level = NULL){
+from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
+                                                   tax_glom_level = NULL){
 
   if(!is.null(tax_glom_level)){
     taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level)
@@ -77,7 +77,8 @@ from_taxonomy_annotate_to_upset_df <- function(taxonomy_annotate_df,
 
   # select only columns that are relevant
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
-    dplyr::select(lineage, query_name)
+    dplyr::select(lineage, query_name) %>%
+    dplyr::distinct()
 
   # turn data frame into list.
   # Each index in the list is named after the query_name it represents.
@@ -92,55 +93,76 @@ from_taxonomy_annotate_to_upset_df <- function(taxonomy_annotate_df,
   # convert list into upset-compliant data.frame
   upset_df <- from_list_to_upset_df(upset_list)
 
-  return(upset_df)
+  # combine the processed taxonomy_annotate_df with the upset_df so that the processed taxonomy_annotate_df can be used to add color to the upset plot
+  upset_inputs <- list(upset_df = upset_df, taxonomy_annotate_df = taxonomy_annotate_df, tax_glom_level = tax_glom_level)
+
+  return(upset_inputs)
 }
 
 #' Title
 #'
 #' @description
-#' If fill is specified, `taxonomy_annotate_df` must also specified as it is used to derive metadata passed to fill.
-#' @param upset_df
-#' @param taxonomy_annotate_df
+
+#' @param upset_inputs
 #' @param fill
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_taxonomy_annotate_upset <- function(upset_df, taxonomy_annotate_df = NULL, fill = NULL){
-  if(!is.null(fill) & is.null(taxonomy_annotate_df)){
-    stop("taxonomy_annotate_df is used to derive fill information. Please supply the taxonomy_annotate_df used to make the upset_df.")
-  }
+plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
+  upset_df <- upset_inputs[[1]]
+  taxonomy_annotate_df <- upset_inputs[[2]]
+  tax_glom_level <- upset_inputs[[3]]
 
-  if(!is.null(taxonomy_annotate_df) & is.null(fill)){
-    message("taxonomy_annotate_df supplied by fill not specified. That's fine! But you won't see any pretty colors. Add a fill variable to get colors")
-  }
+  if(!is.null(fill)){
+    # figure out which columns can encode fill color from taxglom
+    if(tax_glom_level == "domain"){
+      fill_cols <- c("domain")
+    } else if(tax_glom_level == "phylum"){
+      fill_cols <- c("domain", "phylum")
+    } else if(tax_glom_level == "class"){
+      fill_cols <- c("domain", "phylum", "class")
+    } else if(tax_glom_level == "order"){
+      fill_cols <- c("domain", "phylum", "class", "order")
+    } else if(tax_glom_level == "family"){
+      fill_cols <- c("domain", "phylum", "class", "order", "family")
+    } else if(tax_glom_level == "genus"){
+      fill_cols <- c("domain", "phylum", "class", "order", "family", "genus")
+    } else if(tax_glom_level == "species"){
+      fill_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
+    }
 
-  if(!is.null(fill) & !is.null(taxonomy_annotate_df)){
-    # make sure that taxonomy_annotate_df has all of the variables in upset_df.
-    # If not, the wrong taxonomy_annotate_df was probably supplied
-    check_vars_match_upset_df_and_taxonomy_annotate_df <- sapply(rownames(upset_df), function(x) {sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern = x))})
-    # stop if every rowname isn't in the original taxonomy_annotate_df
-    stopifnot(all(check_vars_match_upset_df_and_taxonomy_annotate_df > 0))
+    # join together upset df with metadata in taxonomy_annotate_df
+    taxonomy_annotate_df <-  taxonomy_annotate_df %>%
+      dplyr::select(lineage) %>%
+      tidyr::separate(lineage, into = fill_cols, sep = ";", remove = F) %>%
+      dplyr::distinct() %>%
+      dplyr::select(lineage, fill = tidyselect::all_of(fill)) # make new column name based on the identity of parameter fill
+
+    upset_df <- upset_df %>%
+      tibble::rownames_to_column("lineage") %>%
+      dplyr::left_join(taxonomy_annotate_df, by = "lineage") %>%
+      tibble::column_to_rownames("lineage")
   }
 
   # plot the upset plot
-  upset(upset_df, intersect = names(sourmash_taxonomy_upset_list), set_sizes = F,
-        base_annotations=list(
-          '# lineages'=intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                         text_colors=c(on_background='black', on_bar='black'),
-                                         mapping=aes(fill=database)) +
-            scale_fill_brewer(palette = "Set2"))
+  plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
+                             base_annotations=list(
+                               '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                                                            text_colors=c(on_background='black', on_bar='black'),
+                                                                            mapping=ggplot2::aes(fill=fill)) +
+                                 ggplot2::scale_fill_brewer(palette = "Set2"))
   )
-
+  return(plt)
 }
 
+# taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"), separate_lineage = T)
+#upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df, tax_glom_level = "order")
+# plot_taxonomy_annotate_upset(upset_inputs, fill = "phylum")
 
-# upset_df <- from_taxonomy_annotate_to_upset_df(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"))
-# taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"))
 # sapply(rownames(upset_df), function(x){grepl(pattern = x, x = unique(taxonomy_annotate_df$lineage))})
 # all(grepl(pattern = rownames(update_df), taxonomy_annotate_df$lineage))
 #
 # sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern =rownames(upset_df)[1]))
 # tmp<- sapply(rownames(upset_df), function(x) {sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern = x))})
-
