@@ -17,7 +17,7 @@ test_that("from_list_to_upset_df outputs a correctly formated upset data frame",
 })
 
 test_that("from_signatures_to_upset_df produces an upset df", {
-  sig_df <- Sys.glob("tests/testthat/SRR*ass.sig*") %>%
+  sig_df <- Sys.glob("SRR*ass.sig*") %>%
     purrr::map_dfr(read_signature)
   # should fail because we have multiple k-mer sizes
   expect_error(from_signatures_to_upset_df(sig_df))
@@ -29,7 +29,7 @@ test_that("from_signatures_to_upset_df produces an upset df", {
 })
 
 test_that("from_signatures_to_upset_df produces an upset df", {
-  sig_df <- Sys.glob("tests/testthat/SRR*ass.sig*") %>%
+  sig_df <- Sys.glob("SRR*ass.sig*") %>%
     purrr::map_dfr(read_signature) %>%
     dplyr::filter(ksize == 21)
   upset_df <- from_signatures_to_upset_df(sig_df)
@@ -40,7 +40,7 @@ test_that("from_signatures_to_upset_df produces an upset df", {
 # signatures to rarefaction curves ----------------------------------------
 
 test_that("from_signatures_to_rarefaction_df runs", {
-  sig_df <- Sys.glob("tests/testthat/SRR*ass.sig*") %>%
+  sig_df <- Sys.glob("SRR*ass.sig*") %>%
     purrr::map_dfr(read_signature)
   # should fail because we have multiple k-mer sizes
   expect_error(from_signatures_to_rarefaction_df(sig_df))
@@ -53,7 +53,7 @@ test_that("from_signatures_to_rarefaction_df runs", {
 
 
 test_that("from_signatures_to_rarefaction_df runs", {
-  sig_df <- Sys.glob("tests/testthat/SRR*ass.sig*") %>%
+  sig_df <- Sys.glob("SRR*ass.sig*") %>%
     purrr::map_dfr(read_signature) %>%
     dplyr::filter(ksize == 21)
   rarecurve_df <- from_signatures_to_rarefaction_df(sig_df, step = 1)
