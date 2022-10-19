@@ -82,7 +82,7 @@ check_uniform_parameters_in_signatures_df <- function(signatures_df){
 #'
 #' @param signatures_df
 #'
-#' @return
+#' @return signatures_df with compliant names
 #'
 #' @examples
 #' check_and_edit_names_in_signatures_df(signatures_df)
@@ -122,10 +122,11 @@ check_and_edit_names_in_signatures_df <- function(signatures_df){
 #'
 #' @param signatures_df A data frame of multiple sourmash signatures created by combining many signatures read in by `read_signature()`.
 #'
-#' @return
+#' @return A an upset plot compliant data frame
 #' @export
 #'
 #' @examples
+#' from_signatures_to_upset_df(signatures_df)
 from_signatures_to_upset_df <- function(signatures_df){
   # stop if not all parameters to build the sketches are uniform, otherwise the intersections in the upset plot won't make sense
   check_uniform_parameters_in_signatures_df(signatures_df)
@@ -157,12 +158,13 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' While based on ggplot2, `ComplexUpset::upset()` has a difficult syntax to parameterize.
 #' To produce an alternative visualization, it may be easiest to run `sourmashconsumr::plot_signatures_upset` to retrieve the function source code and alter it.
 #'
-#' @param upset_df An upset-compliant data.frame.
+#' @param upset_df An upset-compliant data frame.
 #'
-#' @return
+#' @return An upset plot produced by ComplexUpset::upset().
 #' @export
 #'
 #' @examples
+#' plot_signatures_upset(upset_df)
 plot_signatures_upset <- function(upset_df){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
@@ -244,6 +246,7 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 #' @export
 #'
 #' @examples
+#' plot_signatures_rarefaction(rarefaction_df)
 plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_plot = 500){
   # check that fraction_of_points_to_plot is >=1
   if(!fraction_of_points_to_plot >= 1){
