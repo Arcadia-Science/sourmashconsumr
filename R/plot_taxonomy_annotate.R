@@ -151,15 +151,16 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                             text_colors=c(on_background='black', on_bar='black'),
-                                                                            mapping=ggplot2::aes(fill=fill)) +
-                                 ggplot2::scale_fill_brewer(palette = "Set2"))
+                                                                            mapping=ggplot2::aes(fill= fill)) +
+                                 ggplot2::scale_fill_brewer(palette = "Set2") +
+                                 ggplot2::labs(fill = fill))
   )
   return(plt)
 }
 
 # taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"), separate_lineage = T)
 #upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df, tax_glom_level = "order")
-# plot_taxonomy_annotate_upset(upset_inputs, fill = "phylum")
+#plot_taxonomy_annotate_upset(upset_inputs, fill = "phylum")
 
 # sapply(rownames(upset_df), function(x){grepl(pattern = x, x = unique(taxonomy_annotate_df$lineage))})
 # all(grepl(pattern = rownames(update_df), taxonomy_annotate_df$lineage))
