@@ -13,6 +13,7 @@ Suggests:
 Config/testthat/edition: 3
 RoxygenNote: 7.2.1
 Imports: 
+    ComplexUpset,
     dplyr,
     ggplot2,
     ggrepel,
@@ -22,4 +23,5 @@ Imports:
     purrr,
     readr,
     tidyr,
-    tidyselect
+    tidyselect,
+    vegan

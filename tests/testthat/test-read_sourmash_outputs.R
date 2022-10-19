@@ -46,6 +46,8 @@ test_that("read signature works with a signature with only one ksize", {
   # This signature is k=21,abund
   sig_df <- read_signature(file = "reads-s10-s11.sig")
   expect_equal(nrow(sig_df), 770)
+  # make sure we include scaled in the output
+  expect_equal(unique(sig_df$scaled), 1000)
 })
 
 test_that("read signature works when num is specified", {

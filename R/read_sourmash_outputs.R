@@ -127,7 +127,7 @@ read_signature <- function(file, compliant = TRUE){
     # define columns that should be selected if compliant = TRUE
     # these are accurate as of sourmash version 4.
     sourmashv4_sig_fields <- c('class', 'email', 'hash_function', 'filename', 'name',
-                               'license', 'num', 'ksize', 'seed', 'max_hash', 'mins',
+                               'license', 'num', 'ksize', 'seed', 'max_hash', 'scaled', 'mins',
                                'md5sum', 'abundances', 'molecule', 'version')
     sig_df <- sig_df %>%
       dplyr::select(tidyselect::any_of(sourmashv4_sig_fields))
