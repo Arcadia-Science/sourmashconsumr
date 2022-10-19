@@ -119,8 +119,11 @@ plot_taxonomy_annotate_upset <- function(upset_df, taxonomy_annotate_df = NULL, 
   if(!is.null(fill) & !is.null(taxonomy_annotate_df)){
     # make sure that taxonomy_annotate_df has all of the variables in upset_df.
     # If not, the wrong taxonomy_annotate_df was probably supplied
-    if(all(grepl(pattern = rownames(update_df), taxonomy_annotate_df$lineage))){}
+    check_vars_match_upset_df_and_taxonomy_annotate_df <- sapply(rownames(upset_df), function(x) {sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern = x))})
+    # stop if every rowname isn't in the original taxonomy_annotate_df
+    stopifnot(all(check_vars_match_upset_df_and_taxonomy_annotate_df > 0))
   }
+
   # plot the upset plot
   upset(upset_df, intersect = names(sourmash_taxonomy_upset_list), set_sizes = F,
         base_annotations=list(
@@ -133,6 +136,11 @@ plot_taxonomy_annotate_upset <- function(upset_df, taxonomy_annotate_df = NULL, 
 }
 
 
-upset_df <- from_taxonomy_annotate_to_upset_df(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"))
-taxonomy_annotate_df <-
-all(grepl(pattern = rownames(update_df), taxonomy_annotate_df$lineage))
+# upset_df <- from_taxonomy_annotate_to_upset_df(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"))
+# taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("tests/testthat/*gtdbrs207_reps.with-lineages.csv"))
+# sapply(rownames(upset_df), function(x){grepl(pattern = x, x = unique(taxonomy_annotate_df$lineage))})
+# all(grepl(pattern = rownames(update_df), taxonomy_annotate_df$lineage))
+#
+# sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern =rownames(upset_df)[1]))
+# tmp<- sapply(rownames(upset_df), function(x) {sum(stringr::str_detect(string = unique(taxonomy_annotate_df$lineage), pattern = x))})
+
