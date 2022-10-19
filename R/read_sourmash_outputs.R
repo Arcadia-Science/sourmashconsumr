@@ -47,8 +47,11 @@ read_gather <- function(file, intersect_bp_threshold, ...){
   }
 }
 
-
 #' Read CSV file or files output by sourmash taxonomy annotate
+#'
+#' @descriptions
+#' `read_taxonomy_annotate()` ...
+#' `read_taxonomy_annotate()` also add the column `n_unique_kmers`, the abundance-weighted number of unique k-mers overlapping between a query and its match.
 #'
 #' @param file Path to CSV file or files output by sourmash taxonomy annotate.
 #' @param intersect_bp_threshold Integer. Gather matches must have an intersect_bp greater than or equal to this value.
