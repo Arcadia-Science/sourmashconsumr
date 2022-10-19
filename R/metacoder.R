@@ -1,79 +1,79 @@
 #' Pivot sourmash_taxonomy_results to wide format
 #'
-#' @param taxonomy_annotate_tibble
+#' @param taxonomy_annotate_df
 #'
-#' @return A tibble in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
+#' @return A data frame in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 #'
 #' @examples
-#' pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
-pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_tibble){
-  taxonomy_annotate_tibble_wide <- taxonomy_annotate_tibble %>%
+#' pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
+pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
+  taxonomy_annotate_df_wide <- taxonomy_annotate_df %>%
     dplyr::select_if(colnames(.) %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns
     tidyr::pivot_wider(names_from = query_name, values_from = n_unique_kmers) # leverage default behavior to have everything be an id col other than names_from and values_from
-  return(taxonomy_annotate_tibble_wide)
+  return(taxonomy_annotate_df_wide)
 }
 
 #' Import the output of sourmash taxonomy annotate into a taxmap metacoder object
 #'
-#' @param taxonomy_annotate_tibble Tibble containing outputs from sourmash taxonomy annotate. If specified, file is ignored. Can contain results from one or many runs of sourmash taxonomy annotate.
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. If specified, file is ignored. Can contain results from one or many runs of sourmash taxonomy annotate.
 #' @inheritParams read_taxonomy_annotate
-#' @param summary_level Character. NULL by default, meaning no summarization is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level before metacoder object is created.
+#' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level before metacoder object is created.
 #' @param ... Arguments passed to metacoder::parse_tax_data().
-#' @param groups A tibble or data.frame with distinct query_name values from taxonomy_annotate_tibble in the first column and query groups in the second column.
+#' @param groups A data frame with distinct query_name values from taxonomy_annotate_df in the first column and query groups in the second column.
 #' @param groups_prefix Character. Ignored if groups is defined. Used to prefix query_name values for the metacoder function calc_n_samples().
 #'
 #' @return A metacoder taxmap object.
 #' @export
 #'
 #' @examples
-#' taxonomy_annotate_to_metacoder()
-taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_tibble = NULL,
-                                           file = NULL,
-                                           intersect_bp_threshold = 50000,
-                                           summary_level = NULL,
-                                           groups = NULL,
-                                           groups_prefix = "x",
-                                           ...){
+#' from_taxonomy_annotate_to_metacoder()
+from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
+                                                file = NULL,
+                                                intersect_bp_threshold = 50000,
+                                                tax_glom_level = NULL,
+                                                groups = NULL,
+                                                groups_prefix = "x",
+                                                ...){
 
-  # either take in tibble from read_taxonomy_annotate or read in sourmash taxonomy annotate output file(s) directly
-  if(missing(taxonomy_annotate_tibble) & missing(file)){
-    stop("Neither taxonomy_annotate_tibble or file were specified. Please specify either taxonomy_annotate_tibble or file and retry.")
+  # either take in data frame from read_taxonomy_annotate or read in sourmash taxonomy annotate output file(s) directly
+  if(missing(taxonomy_annotate_df) & missing(file)){
+    stop("Neither taxonomy_annotate_df or file were specified. Please specify either taxonomy_annotate_df or file and retry.")
   }
 
-  # if file is defined but taxonomy_annotate_tibble is missing, read in the files using read_taxonomy_annotate()
-  if(missing(taxonomy_annotate_tibble) & !missing(file)){
-    taxonomy_annotate_tibble <- read_taxonomy_annotate(file = file, intersect_bp_threshold = intersect_bp_threshold, separate_lineage = F)
+  # if file is defined but taxonomy_annotate_df is missing, read in the files using read_taxonomy_annotate()
+  if(missing(taxonomy_annotate_df) & !missing(file)){
+    taxonomy_annotate_df <- read_taxonomy_annotate(file = file, intersect_bp_threshold = intersect_bp_threshold, separate_lineage = F)
   }
 
-  # figure out what database was used before manipulating the taxonomy_annotate_tibble:
+  # figure out what database was used before manipulating the taxonomy_annotate_df:
   # use the database column to determine which database was used during sourmash taxonomy annotate
-  database <- ifelse(grepl(pattern = "genbank", taxonomy_annotate_tibble$filename[1]), "genbank",
-                     ifelse(grepl(pattern = "gtdb", taxonomy_annotate_tibble$filename[1]), "gtdb", "userdb"))
+  database <- ifelse(grepl(pattern = "genbank", taxonomy_annotate_df$filename[1]), "genbank",
+                     ifelse(grepl(pattern = "gtdb", taxonomy_annotate_df$filename[1]), "gtdb", "userdb"))
 
-  # if summary_level is defined, parse lineage and agglomerate counts to that level of taxonomy
-  if(!is.null(summary_level)){
+  # if tax_glom_level is defined, parse lineage and agglomerate counts to that level of taxonomy
+  if(!is.null(tax_glom_level)){
     # make sure only except arguments are returned
-    if(!summary_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
-      stop("Unrecognized string passed to summary_level. Please use one of species, genus, family, order, class, phylum, or domain.")
+    if(!tax_glom_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
+      stop("Unrecognized string passed to tax_glom_level. Please use one of species, genus, family, order, class, phylum, or domain.")
     }
     # agglomerate to level of taxonomy
-    if(summary_level == "domain"){
+    if(tax_glom_level == "domain"){
       agglom_cols <- c("query_name", "domain")
-    } else if(summary_level == "phylum"){
+    } else if(tax_glom_level == "phylum"){
       agglom_cols <- c("query_name", "domain", "phylum")
-    } else if(summary_level == "class"){
+    } else if(tax_glom_level == "class"){
       agglom_cols <- c("query_name", "domain", "phylum", "class")
-    } else if(summary_level == "order"){
+    } else if(tax_glom_level == "order"){
       agglom_cols <- c("query_name", "domain", "phylum", "class", "order")
-    } else if(summary_level == "family"){
+    } else if(tax_glom_level == "family"){
       agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family")
-    } else if(summary_level == "genus"){
+    } else if(tax_glom_level == "genus"){
       agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus")
-    } else if(summary_level == "species"){
+    } else if(tax_glom_level == "species"){
       agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus", "species")
     }
 
-    taxonomy_annotate_tibble <- taxonomy_annotate_tibble %>%
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
       dplyr::select(genome_accession, lineage, query_name, n_unique_kmers) %>%
       tidyr::separate(lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
       dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
@@ -84,26 +84,26 @@ taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_tibble = NULL,
 
   }
 
-  # transform taxonomy annotate tibble into wide format
-  taxonomy_annotate_tibble_wide <- pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
+  # transform taxonomy annotate df into wide format
+  taxonomy_annotate_df_wide <- pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 
   # create the metacoder object
   # need this to be able to be user-specified for class_regex and parse_tax_data() in case someone used their own database
   if(database == "genbank"){
-    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_tibble_wide,
+    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_df_wide,
                                                class_cols = "lineage", # the column that contains taxonomic information
                                                class_sep = ";", # The character used to separate taxa in the classification
                                                class_regex = "(.*)", # Regex identifying where the data for each taxon is
                                                class_key = c(tax_name = "taxon_name")) # A key describing each regex capture group
   } else if(database == "gtdb"){
-    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_tibble_wide,
+    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_df_wide,
                                                class_cols = "lineage",  # the column that contains taxonomic information
                                                class_sep = ";", # The character used to separate taxa in the classification
                                                class_regex = "^(.+)__(.+)$", # Regex identifying where the data for each taxon is
                                                class_key = c(tax_rank = "info", # A key describing each regex capture group
                                                              tax_name = "taxon_name"))
   } else if(!missing(class_regex) & !missing(class_key)){
-    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_tibble_wide,
+    metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_df_wide,
                                                class_cols = "lineage",  # the column that contains taxonomic information
                                                class_sep = ";", # The character used to separate taxa in the classification
                                                class_regex = class_regex,
@@ -117,7 +117,7 @@ taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_tibble = NULL,
   # Add information to the metacoder object using metacoder functions
 
   # set number of unique k-mers assigned to a genome as the abundance information
-  metacoder_obj$data$tax_abund <- metacoder::calc_taxon_abund(metacoder_obj, "tax_data", cols = unique(taxonomy_annotate_tibble$query_name))
+  metacoder_obj$data$tax_abund <- metacoder::calc_taxon_abund(metacoder_obj, "tax_data", cols = unique(taxonomy_annotate_df$query_name))
 
   # calc_n_samples() calculates the number of samples that contained a taxonomic lineage,
   # and propagates that information up the lineage.
@@ -138,7 +138,7 @@ taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_tibble = NULL,
 
   metacoder_obj$data$tax_occ <- metacoder::calc_n_samples(metacoder_obj, "tax_abund",
                                                           groups =  groups[[2]],
-                                                          cols = unique(taxonomy_annotate_tibble$query_name))
+                                                          cols = unique(taxonomy_annotate_df$query_name))
 
   return(metacoder_obj)
 }

@@ -4,17 +4,17 @@
 \alias{pivot_wider_taxonomy_annotate}
 \title{Pivot sourmash_taxonomy_results to wide format}
 \usage{
-pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
+pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 }
 \arguments{
-\item{taxonomy_annotate_tibble}{}
+\item{taxonomy_annotate_df}{}
 }
 \value{
-A tibble in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
+A data frame in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 }
 \description{
 Pivot sourmash_taxonomy_results to wide format
 }
 \examples{
-pivot_wider_taxonomy_annotate(taxonomy_annotate_tibble)
+pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 }
