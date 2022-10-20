@@ -41,6 +41,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          packages: any::XML
           extra-packages: any::rcmdcheck
           needs: check
 
