@@ -24,6 +24,8 @@ check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
 #' @return A data frame.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' make_compare_mds(compare_df)
 make_compare_mds <- function(compare_df){
@@ -35,7 +37,7 @@ make_compare_mds <- function(compare_df){
     stats::dist() %>%
     stats::cmdscale() %>%
     as.data.frame() %>%
-    dplyr::rename(MDS1 = V1, MDS2 = V2) %>%
+    dplyr::rename(MDS1 = .data$V1, MDS2 = .data$V2) %>%
     tibble::rownames_to_column("sample")
 
   return(compare_mds)
@@ -49,10 +51,12 @@ make_compare_mds <- function(compare_df){
 #' @return A ggplot2 plot.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' plot_compare_mds(compare_mds)
 plot_compare_mds <- function(compare_mds, label = TRUE){
-  mds_plt <- ggplot2::ggplot(compare_mds, ggplot2::aes(x = MDS1, y = MDS2, label = sample)) +
+  mds_plt <- ggplot2::ggplot(compare_mds, ggplot2::aes(x = .data$MDS1, y = .data$MDS2, label = .data$sample)) +
     ggplot2::geom_point() +
     ggplot2::theme_classic()
 
