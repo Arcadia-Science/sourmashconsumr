@@ -7,15 +7,17 @@
 #' @return A tibble.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' read_compare_csv("")
 read_compare_csv <- function(file, sample_to_rownames = F, ...){
   if(sample_to_rownames == F){
     compare_df <- readr::read_csv(file, ...) %>%
-      dplyr::mutate(sample = colnames(.), .before = everything())
+      dplyr::mutate(sample = colnames(.data$.), .before = dplyr::everything())
   } else if(sample_to_rownames == T){
     compare_df <- readr::read_csv(file, ...) %>%
-      dplyr::mutate(sample = colnames(.), .before = everything()) %>%
+      dplyr::mutate(sample = colnames(.data$.), .before = dplyr::everything()) %>%
       tibble::column_to_rownames("sample")
   }
   return(compare_df)
@@ -30,6 +32,8 @@ read_compare_csv <- function(file, sample_to_rownames = F, ...){
 #' @return A tibble.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' read_gather()
 read_gather <- function(file, intersect_bp_threshold, ...){
@@ -37,13 +41,13 @@ read_gather <- function(file, intersect_bp_threshold, ...){
     # allow the function to read multiple files at once
     taxonomy_annotate_df <- file %>%
       purrr::map_dfr(readr::read_csv, col_types = "ddddddddcccddddcccddcddlddddl", ...) %>%
-      dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
-      dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
+      dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name")
 
   } else if(length(file) == 1){
     taxonomy_annotate_df <- readr::read_csv(file, col_types = "ddddddddcccddddcccddcddlddddl", ...) %>%
-      dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
-      dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
+      dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name")
   }
 }
 
@@ -58,6 +62,8 @@ read_gather <- function(file, intersect_bp_threshold, ...){
 #' @return A tibble.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' read_taxonomy_annotate()
 read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separate_lineage = T, ...){
@@ -65,18 +71,18 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
     # allow the function to read multiple files at once
     taxonomy_annotate_df <- file %>%
       purrr::map_dfr(readr::read_csv, col_types = "ddddddddcccddddcccddcddlddddlc", ...) %>%
-      dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
-      dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers
-      dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
+      dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(n_unique_kmers = (.data$unique_intersect_bp / .data$scaled) * .data$average_abund) %>% # calculate the number of uniquely matched k-mers
+      dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name")
   } else if(length(file) == 1){
     taxonomy_annotate_df <- readr::read_csv(file, col_types = "ddddddddcccddddcccddcddlddddlc", ...) %>%
-      dplyr::filter(intersect_bp >= intersect_bp_threshold) %>%
-      dplyr::mutate(n_unique_kmers = (unique_intersect_bp / scaled) * average_abund) %>% # calculate the number of uniquely matched k-mers
-      dplyr::mutate(genome_accession = gsub(" .*", "", name) , .after = "name")
+      dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
+      dplyr::mutate(n_unique_kmers = (.data$unique_intersect_bp / .data$scaled) * .data$average_abund) %>% # calculate the number of uniquely matched k-mers
+      dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name")
   }
   if(separate_lineage == T){
     taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      tidyr::separate(lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right")
+      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right")
   }
   return(taxonomy_annotate_df)
 }
@@ -106,6 +112,8 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #' @return A tibble.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #' read_signature("tests/testthat/SRR18071810.sig")
 read_signature <- function(file, compliant = TRUE){
@@ -120,7 +128,7 @@ read_signature <- function(file, compliant = TRUE){
   # max_hash should be the same between all sketches in a sig; I don't think they can be calculated any other way
   if(unique(sig_df$max_hash) != 0){
     sig_df <- sig_df %>%
-      dplyr::mutate(scaled = get_scaled_for_max_hash(max_hash)) # calculate the scaled value from max_hash
+      dplyr::mutate(scaled = get_scaled_for_max_hash(.data$max_hash)) # calculate the scaled value from max_hash
   }
 
   if(compliant == TRUE) {
