@@ -10,7 +10,9 @@
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' read_compare_csv("")
+#' }
 read_compare_csv <- function(file, sample_to_rownames = F, ...){
   compare_df <- readr::read_csv(file, ...)
   colnames_compare_df <- colnames(compare_df)
@@ -37,7 +39,9 @@ read_compare_csv <- function(file, sample_to_rownames = F, ...){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' read_gather()
+#' }
 read_gather <- function(file, intersect_bp_threshold, ...){
   if(length(file) > 1){
     # allow the function to read multiple files at once
@@ -67,7 +71,9 @@ read_gather <- function(file, intersect_bp_threshold, ...){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' read_taxonomy_annotate()
+#' }
 read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separate_lineage = T, ...){
   if(length(file) > 1){
     # allow the function to read multiple files at once
@@ -95,8 +101,6 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 50000, separat
 #'
 #' @return Integer; a scaled value
 #'
-#' @examples
-#' get_scaled_for_max_hash(184467440737095)
 get_scaled_for_max_hash <- function(sig_max_hash){
   # sourmash uses the 64-bit hash space of MurmurHash only
   # this is 2 ** 64 - 1 in hexadecimal
@@ -117,7 +121,9 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' read_signature("tests/testthat/SRR18071810.sig")
+#' }
 read_signature <- function(file, compliant = TRUE){
   stopifnot(file.exists(file)) # stop if the file doesn't exist
   # read in the signature json file to a dataframe and calculcate the scaled value

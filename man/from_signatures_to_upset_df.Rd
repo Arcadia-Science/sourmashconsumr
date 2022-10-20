@@ -23,5 +23,7 @@ The returned data frame will have the minhashes as row names and the shortened f
 If plotting with Complex Upset, additional metadata can be added to the data frame (and therefore the plot) by joining on the values of the minhash rownames.
 }
 \examples{
+\dontrun{
 from_signatures_to_upset_df()
+}
 }

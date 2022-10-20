@@ -18,5 +18,7 @@ A ggplot2 plot.
 Plot an MDS data.frame produced from the output of sourmash compare
 }
 \examples{
+\dontrun{
 plot_compare_mds(compare_mds)
+}
 }

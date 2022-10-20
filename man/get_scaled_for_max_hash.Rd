@@ -15,6 +15,3 @@ Integer; a scaled value
 \description{
 Calculate the scaled value for a signature from the max_hash value
 }
-\examples{
-get_scaled_for_max_hash(184467440737095)
-}

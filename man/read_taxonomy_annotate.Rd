@@ -27,5 +27,7 @@ A tibble.
 Read CSV file or files output by sourmash taxonomy annotate
 }
 \examples{
+\dontrun{
 read_taxonomy_annotate()
+}
 }

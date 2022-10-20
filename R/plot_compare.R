@@ -22,7 +22,9 @@ check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' make_compare_mds(compare_df)
+#' }
 make_compare_mds <- function(compare_df){
   # check if compare tibble was read in with sample names as a column
   compare_df <- check_compare_df_sample_col_and_move_to_rowname(compare_df)
@@ -49,7 +51,9 @@ make_compare_mds <- function(compare_df){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' plot_compare_mds(compare_mds)
+#' }
 plot_compare_mds <- function(compare_mds, label = TRUE){
   mds_plt <- ggplot2::ggplot(compare_mds, ggplot2::aes(x = .data$MDS1, y = .data$MDS2, label = .data$sample)) +
     ggplot2::geom_point() +
@@ -73,7 +77,9 @@ plot_compare_mds <- function(compare_mds, label = TRUE){
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' plot_compare_heatmap()
+#' }
 plot_compare_heatmap <- function(compare_df, seed = 42, ...){
   # set seed so the same visualization is produced each time the code is run
   set.seed(seed = seed)

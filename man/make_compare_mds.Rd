@@ -16,5 +16,7 @@ A data frame.
 Perform an MDS analysis from a sourmash compare output and produce a tidy data.frame
 }
 \examples{
+\dontrun{
 make_compare_mds(compare_df)
+}
 }

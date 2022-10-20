@@ -39,5 +39,7 @@ A metacoder taxmap object.
 Import the output of sourmash taxonomy annotate into a taxmap metacoder object
 }
 \examples{
+\dontrun{
 from_taxonomy_annotate_to_metacoder()
+}
 }

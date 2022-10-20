@@ -20,5 +20,7 @@ A plot of sourmash compare results.
 Plot a heatmap from a tibble of sourmash compare results.
 }
 \examples{
+\dontrun{
 plot_compare_heatmap()
+}
 }

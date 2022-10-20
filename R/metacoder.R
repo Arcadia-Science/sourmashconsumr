@@ -29,7 +29,9 @@ pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' from_taxonomy_annotate_to_metacoder()
+#' }
 from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
                                                 file = NULL,
                                                 intersect_bp_threshold = 50000,

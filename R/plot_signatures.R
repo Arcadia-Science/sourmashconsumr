@@ -124,7 +124,9 @@ check_and_edit_names_in_signatures_df <- function(signatures_df){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' from_signatures_to_upset_df()
+#' }
 from_signatures_to_upset_df <- function(signatures_df){
   # stop if not all parameters to build the sketches are uniform, otherwise the intersections in the upset plot won't make sense
   check_uniform_parameters_in_signatures_df(signatures_df)
@@ -164,7 +166,9 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' plot_signatures_upset()
+#' }
 plot_signatures_upset <- function(upset_df){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
@@ -200,7 +204,9 @@ plot_signatures_upset <- function(upset_df){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' from_signatures_to_rarefaction_df()
+#' }
 from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
   # check that the signatures data frame has a column for abundances
   if("abundances" %in% colnames(signatures_df) == FALSE){
@@ -253,7 +259,9 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
 #' plot_signatures_rarefaction()
+#' }
 plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_plot = 500){
   # check that fraction_of_points_to_plot is >=1
   if(!fraction_of_points_to_plot >= 1){
