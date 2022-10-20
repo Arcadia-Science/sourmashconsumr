@@ -20,5 +20,7 @@ A tibble.
 Read CSV file or files output by sourmash gather
 }
 \examples{
+\dontrun{
 read_gather()
+}
 }

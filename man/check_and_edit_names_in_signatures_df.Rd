@@ -7,14 +7,11 @@
 check_and_edit_names_in_signatures_df(signatures_df)
 }
 \arguments{
-\item{signatures_df}{}
+\item{signatures_df}{A data frame representing many signatures.}
 }
 \value{
 signatures_df with compliant names
 }
 \description{
 Check for missing name, NAs in name, or empty name in a data frame of signatures
-}
-\examples{
-check_and_edit_names_in_signatures_df(signatures_df)
 }

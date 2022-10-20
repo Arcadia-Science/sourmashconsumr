@@ -1,15 +1,15 @@
 #' Pivot sourmash_taxonomy_results to wide format
 #'
-#' @param taxonomy_annotate_df
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate in long format.
 #'
 #' @return A data frame in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 #'
-#' @examples
-#' pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
+#' @importFrom rlang .data
 pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
+  colnames_taxonomy_annotate_df <- colnames(taxonomy_annotate_df)
   taxonomy_annotate_df_wide <- taxonomy_annotate_df %>%
-    dplyr::select_if(colnames(.) %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns
-    tidyr::pivot_wider(names_from = query_name, values_from = n_unique_kmers) # leverage default behavior to have everything be an id col other than names_from and values_from
+    dplyr::select_if(colnames_taxonomy_annotate_df %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns
+    tidyr::pivot_wider(names_from = "query_name", values_from = "n_unique_kmers") # leverage default behavior to have everything be an id col other than names_from and values_from
   return(taxonomy_annotate_df_wide)
 }
 
@@ -18,23 +18,28 @@ pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. If specified, file is ignored. Can contain results from one or many runs of sourmash taxonomy annotate.
 #' @inheritParams read_taxonomy_annotate
 #' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level before metacoder object is created.
-#' @param ... Arguments passed to metacoder::parse_tax_data().
 #' @param groups A data frame with distinct query_name values from taxonomy_annotate_df in the first column and query groups in the second column.
 #' @param groups_prefix Character. Ignored if groups is defined. Used to prefix query_name values for the metacoder function calc_n_samples().
+#' @param class_key Character. class_key to use to build metacoder object. See metacoder documentation for more information. Ignored if you used pre-built sourmash GenBank or GTDB databases when running sourmash.
+#' @param class_regex Character. class_regex to use to build metacoder object. See metacoder documentation for more information. Ignored if you used pre-built sourmash GenBank or GTDB databases when running sourmash.
 #'
 #' @return A metacoder taxmap object.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
+#' \dontrun{
 #' from_taxonomy_annotate_to_metacoder()
+#' }
 from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
                                                 file = NULL,
                                                 intersect_bp_threshold = 50000,
                                                 tax_glom_level = NULL,
                                                 groups = NULL,
                                                 groups_prefix = "x",
-                                                ...){
-
+                                                class_key = NULL,
+                                                class_regex = NULL) {
   # either take in data frame from read_taxonomy_annotate or read in sourmash taxonomy annotate output file(s) directly
   if(missing(taxonomy_annotate_df) & missing(file)){
     stop("Neither taxonomy_annotate_df or file were specified. Please specify either taxonomy_annotate_df or file and retry.")
@@ -74,14 +79,13 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
     }
 
     taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select(genome_accession, lineage, query_name, n_unique_kmers) %>%
-      tidyr::separate(lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
+      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
       dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(n_unique_kmers = sum(n_unique_kmers)) %>%
+      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
       dplyr::ungroup() %>%
-      tidyr::unite(lineage, all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select(lineage, query_name, n_unique_kmers)
-
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "n_unique_kmers")
   }
 
   # transform taxonomy annotate df into wide format
@@ -102,7 +106,7 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
                                                class_regex = "^(.+)__(.+)$", # Regex identifying where the data for each taxon is
                                                class_key = c(tax_rank = "info", # A key describing each regex capture group
                                                              tax_name = "taxon_name"))
-  } else if(!missing(class_regex) & !missing(class_key)){
+  } else if(!is.null(class_regex) & !is.null(class_key)){
     metacoder_obj <- metacoder::parse_tax_data(taxonomy_annotate_df_wide,
                                                class_cols = "lineage",  # the column that contains taxonomic information
                                                class_sep = ";", # The character used to separate taxa in the classification

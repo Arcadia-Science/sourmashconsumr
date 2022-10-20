@@ -39,12 +39,9 @@ from_list_to_upset_df <- function (upset_list) {
 
 #' Check uniformity in sketch parameters
 #'
-#' @param signatures A data.frame representing many signatures.
+#' @param signatures_df A data frame representing many signatures.
 #'
 #' @return NULL. Stops execution if parameters are not uniform.
-#'
-#' @examples
-#' check_uniform_parameters_in_signatures_df(signatures)
 check_uniform_parameters_in_signatures_df <- function(signatures_df){
   # check that there is only one k-mer size, scaled value, num, hash_function, seed, molecule type in the combined data.frame.
   # It doesn't make sense to visualize across these values as they represent fundamentally different things that are not inter-operable.
@@ -80,29 +77,28 @@ check_uniform_parameters_in_signatures_df <- function(signatures_df){
 
 #' Check for missing name, NAs in name, or empty name in a data frame of signatures
 #'
-#' @param signatures_df
+#' @param signatures_df A data frame representing many signatures.
 #'
 #' @return signatures_df with compliant names
 #'
-#' @examples
-#' check_and_edit_names_in_signatures_df(signatures_df)
+#' @importFrom rlang .data
 check_and_edit_names_in_signatures_df <- function(signatures_df){
   # if name isn't in the data frame, or if it is blank, calculate name from basename of filename
   if(!"name" %in% colnames(signatures_df)){
     signatures_df <- signatures_df %>%
-      dplyr::mutate(name = basename(filename)) # set names as basename of filename
+      dplyr::mutate(name = basename(.data$filename)) # set names as basename of filename
   }
 
   # if name is in the data frame, replace missing names (NA) with basename of filename
   if(sum(is.na(signatures_df$name)) > 0){
     signatures_df <- signatures_df %>%
-      dplyr::mutate(name = ifelse(is.na(name), basename(filename), name))
+      dplyr::mutate(name = ifelse(is.na(.data$name), basename(.data$filename), .data$name))
   }
 
   # if name is in data frame, replace it with basename of filename if it contains empty character strings ""
   if("" %in% signatures_df$name){
     signatures_df <- signatures_df %>%
-      dplyr::mutate(name = ifelse(name == "", basename(filename), name))
+      dplyr::mutate(name = ifelse(.data$name == "", basename(.data$filename), .data$name))
   }
 
   return(signatures_df)
@@ -125,8 +121,12 @@ check_and_edit_names_in_signatures_df <- function(signatures_df){
 #' @return A an upset plot compliant data frame
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
-#' from_signatures_to_upset_df(signatures_df)
+#' \dontrun{
+#' from_signatures_to_upset_df()
+#' }
 from_signatures_to_upset_df <- function(signatures_df){
   # stop if not all parameters to build the sketches are uniform, otherwise the intersections in the upset plot won't make sense
   check_uniform_parameters_in_signatures_df(signatures_df)
@@ -137,9 +137,11 @@ from_signatures_to_upset_df <- function(signatures_df){
   # turn dataframe into list.
   # Each index in the list is named after the signature it represents.
   # Each index contains a vector of hashes that were in that signature
+  . <- NULL # need to set . as global var because of whack line.
+  # I don't actually like this approach, but I think it's ok for now until I can find a workaround for said line.
   upset_list <- signatures_df %>%
-    dplyr::group_by(name) %>%
-    {setNames(dplyr::group_split(.), dplyr::group_keys(.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
+    dplyr::group_by(.data$name) %>%
+    {stats::setNames(dplyr::group_split(.), dplyr::group_keys(.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
 
   # extract just the minhashes
   upset_list <- lapply(upset_list, function(x) {x$mins})
@@ -164,7 +166,9 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' @export
 #'
 #' @examples
-#' plot_signatures_upset(upset_df)
+#' \dontrun{
+#' plot_signatures_upset()
+#' }
 plot_signatures_upset <- function(upset_df){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
@@ -197,8 +201,12 @@ plot_signatures_upset <- function(upset_df){
 #' @return A tidy data frame.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
-#' from_signatures_to_rarefaction_df(signatures_df)
+#' \dontrun{
+#' from_signatures_to_rarefaction_df()
+#' }
 from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
   # check that the signatures data frame has a column for abundances
   if("abundances" %in% colnames(signatures_df) == FALSE){
@@ -212,10 +220,13 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 
   # format the signatures into a rarecurve-compliant data frame
   signatures_df <- signatures_df %>%
-    dplyr::select(name, mins, abundances) %>% # select columns with relevant data
-    tidyr::pivot_wider(id_cols = name, values_from = "abundances", names_from = "mins") %>% # transform to wide format
-    tibble::column_to_rownames("name") %>%
-    replace(is.na(.), 0) # back fill NAs with 0s
+    dplyr::select("name", "mins", "abundances") %>% # select columns with relevant data
+    tidyr::pivot_wider(id_cols = "name", values_from = "abundances", names_from = "mins") %>% # transform to wide format
+    tibble::column_to_rownames("name")
+
+  # replace NAs with 0
+  # done in base R to avoid . syntax in replace(is.na(.), 0)
+  signatures_df[is.na(signatures_df)] <- 0
 
   # remove hashes (columns) that are only observed once and in one sample
   # since these rarefaction curves should only be built on reads, these hashes are probably errors
@@ -245,8 +256,12 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 #' @return A ggplot2 object.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
-#' plot_signatures_rarefaction(rarefaction_df)
+#' \dontrun{
+#' plot_signatures_rarefaction()
+#' }
 plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_plot = 500){
   # check that fraction_of_points_to_plot is >=1
   if(!fraction_of_points_to_plot >= 1){
@@ -258,11 +273,11 @@ plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_pl
   # This filtering code will break if given the value 1
   if(fraction_of_points_to_plot != 1){
     rarefaction_df <- rarefaction_df %>%
-      dplyr::filter(num_kmers_sampled %% fraction_of_points_to_plot == 1)
+      dplyr::filter(.data$num_kmers_sampled %% fraction_of_points_to_plot == 1)
   }
 
   plt <- ggplot2::ggplot(rarefaction_df,
-                ggplot2::aes(x = num_kmers_sampled, y = num_kmers_observed)) +
+                         ggplot2::aes(x = .data$num_kmers_sampled, y = .data$num_kmers_observed)) +
     ggplot2::geom_point() +
     ggplot2::labs(x = "number of sampled k-mers", y = "number of distinct k-mers observed")
 

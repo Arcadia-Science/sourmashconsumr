@@ -22,6 +22,9 @@ Imports:
     metacoder,
     purrr,
     readr,
+    rlang,
+    stats,
+    tibble,
     tidyr,
     tidyselect,
     vegan

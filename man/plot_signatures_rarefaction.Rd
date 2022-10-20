@@ -20,5 +20,7 @@ Since the rarefaction curves may contain many dense points, the `fraction_of_poi
 Rarefaction curves that end with a shallow slow likely represent samples that were sequenced deeply enough to capture the k-mer diversity in the sequence.
 }
 \examples{
-plot_signatures_rarefaction(rarefaction_df)
+\dontrun{
+plot_signatures_rarefaction()
+}
 }
