@@ -3,9 +3,6 @@
 #' @param compare_df A data frame produced from read_compare_csv().
 #'
 #' @return A data frame.
-#'
-#' @examples
-#' check_compare_df_sample_col_and_move_to_rowname(compare_df)
 check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
   # check if compare data frame was read in with sample names as a column
   if("sample" %in% colnames(compare_df)){
@@ -24,8 +21,6 @@ check_compare_df_sample_col_and_move_to_rowname <- function(compare_df){
 #' @return A data frame.
 #' @export
 #'
-#' @importFrom rlang .data
-#'
 #' @examples
 #' make_compare_mds(compare_df)
 make_compare_mds <- function(compare_df){
@@ -37,7 +32,7 @@ make_compare_mds <- function(compare_df){
     stats::dist() %>%
     stats::cmdscale() %>%
     as.data.frame() %>%
-    dplyr::rename(MDS1 = .data$V1, MDS2 = .data$V2) %>%
+    dplyr::rename(MDS1 = "V1", MDS2 = "V2") %>%
     tibble::rownames_to_column("sample")
 
   return(compare_mds)

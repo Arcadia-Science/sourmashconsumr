@@ -12,12 +12,14 @@
 #' @examples
 #' read_compare_csv("")
 read_compare_csv <- function(file, sample_to_rownames = F, ...){
+  compare_df <- readr::read_csv(file, ...)
+  colnames_compare_df <- colnames(compare_df)
   if(sample_to_rownames == F){
-    compare_df <- readr::read_csv(file, ...) %>%
-      dplyr::mutate(sample = colnames(.data$.), .before = dplyr::everything())
+    compare_df <- compare_df %>%
+      dplyr::mutate(sample = colnames_compare_df, .before = dplyr::everything())
   } else if(sample_to_rownames == T){
-    compare_df <- readr::read_csv(file, ...) %>%
-      dplyr::mutate(sample = colnames(.data$.), .before = dplyr::everything()) %>%
+    compare_df <- compare_df %>%
+      dplyr::mutate(sample = colnames_compare_df, .before = dplyr::everything()) %>%
       tibble::column_to_rownames("sample")
   }
   return(compare_df)

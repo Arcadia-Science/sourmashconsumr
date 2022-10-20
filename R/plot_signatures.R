@@ -42,7 +42,6 @@ from_list_to_upset_df <- function (upset_list) {
 #' @param signatures_df A data frame representing many signatures.
 #'
 #' @return NULL. Stops execution if parameters are not uniform.
-#'
 check_uniform_parameters_in_signatures_df <- function(signatures_df){
   # check that there is only one k-mer size, scaled value, num, hash_function, seed, molecule type in the combined data.frame.
   # It doesn't make sense to visualize across these values as they represent fundamentally different things that are not inter-operable.
@@ -82,6 +81,7 @@ check_uniform_parameters_in_signatures_df <- function(signatures_df){
 #'
 #' @return signatures_df with compliant names
 #'
+#' @importFrom rlang .data
 check_and_edit_names_in_signatures_df <- function(signatures_df){
   # if name isn't in the data frame, or if it is blank, calculate name from basename of filename
   if(!"name" %in% colnames(signatures_df)){
@@ -98,7 +98,7 @@ check_and_edit_names_in_signatures_df <- function(signatures_df){
   # if name is in data frame, replace it with basename of filename if it contains empty character strings ""
   if("" %in% signatures_df$name){
     signatures_df <- signatures_df %>%
-      dplyr::mutate(name = ifelse(name == "", basename(.data$filename), .data$name))
+      dplyr::mutate(name = ifelse(.data$name == "", basename(.data$filename), .data$name))
   }
 
   return(signatures_df)
@@ -124,7 +124,7 @@ check_and_edit_names_in_signatures_df <- function(signatures_df){
 #' @importFrom rlang .data
 #'
 #' @examples
-#' from_signatures_to_upset_df(signatures_df)
+#' from_signatures_to_upset_df()
 from_signatures_to_upset_df <- function(signatures_df){
   # stop if not all parameters to build the sketches are uniform, otherwise the intersections in the upset plot won't make sense
   check_uniform_parameters_in_signatures_df(signatures_df)
@@ -135,9 +135,11 @@ from_signatures_to_upset_df <- function(signatures_df){
   # turn dataframe into list.
   # Each index in the list is named after the signature it represents.
   # Each index contains a vector of hashes that were in that signature
+  . <- NULL # need to set . as global var because of whack line.
+  # I don't actually like this approach, but I think it's ok for now until I can find a workaround for said line.
   upset_list <- signatures_df %>%
     dplyr::group_by(.data$name) %>%
-    {stats::setNames(dplyr::group_split(.data$.), dplyr::group_keys(.data$.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
+    {stats::setNames(dplyr::group_split(.), dplyr::group_keys(.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
 
   # extract just the minhashes
   upset_list <- lapply(upset_list, function(x) {x$mins})
@@ -162,7 +164,7 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' @export
 #'
 #' @examples
-#' plot_signatures_upset(upset_df)
+#' plot_signatures_upset()
 plot_signatures_upset <- function(upset_df){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
@@ -198,7 +200,7 @@ plot_signatures_upset <- function(upset_df){
 #' @importFrom rlang .data
 #'
 #' @examples
-#' from_signatures_to_rarefaction_df(signatures_df)
+#' from_signatures_to_rarefaction_df()
 from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
   # check that the signatures data frame has a column for abundances
   if("abundances" %in% colnames(signatures_df) == FALSE){
@@ -212,10 +214,13 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 
   # format the signatures into a rarecurve-compliant data frame
   signatures_df <- signatures_df %>%
-    dplyr::select(.data$name, .data$mins, .data$abundances) %>% # select columns with relevant data
-    tidyr::pivot_wider(id_cols = .data$name, values_from = "abundances", names_from = "mins") %>% # transform to wide format
-    tibble::column_to_rownames("name") %>%
-    replace(is.na(.data$.), 0) # back fill NAs with 0s
+    dplyr::select("name", "mins", "abundances") %>% # select columns with relevant data
+    tidyr::pivot_wider(id_cols = "name", values_from = "abundances", names_from = "mins") %>% # transform to wide format
+    tibble::column_to_rownames("name")
+
+  # replace NAs with 0
+  # done in base R to avoid . syntax in replace(is.na(.), 0)
+  signatures_df[is.na(signatures_df)] <- 0
 
   # remove hashes (columns) that are only observed once and in one sample
   # since these rarefaction curves should only be built on reads, these hashes are probably errors
@@ -248,7 +253,7 @@ from_signatures_to_rarefaction_df <- function(signatures_df, step = 1){
 #' @importFrom rlang .data
 #'
 #' @examples
-#' plot_signatures_rarefaction(rarefaction_df)
+#' plot_signatures_rarefaction()
 plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_plot = 500){
   # check that fraction_of_points_to_plot is >=1
   if(!fraction_of_points_to_plot >= 1){

@@ -6,9 +6,10 @@
 #'
 #' @importFrom rlang .data
 pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
+  colnames_taxonomy_annotate_df <- colnames(taxonomy_annotate_df)
   taxonomy_annotate_df_wide <- taxonomy_annotate_df %>%
-    dplyr::select_if(colnames(.data$.) %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns
-    tidyr::pivot_wider(names_from = .data$query_name, values_from = .data$n_unique_kmers) # leverage default behavior to have everything be an id col other than names_from and values_from
+    dplyr::select_if(colnames_taxonomy_annotate_df %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns
+    tidyr::pivot_wider(names_from = "query_name", values_from = "n_unique_kmers") # leverage default behavior to have everything be an id col other than names_from and values_from
   return(taxonomy_annotate_df_wide)
 }
 
@@ -75,13 +76,13 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
     }
 
     taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select(.data$genome_accession, .data$lineage, .data$query_name, .data$n_unique_kmers) %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
       tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
       dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
       dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
       dplyr::ungroup() %>%
-      tidyr::unite(.data$lineage, all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select(.data$lineage, .data$query_name, .data$n_unique_kmers)
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "n_unique_kmers")
 
   }
 
