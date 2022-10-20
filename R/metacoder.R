@@ -61,32 +61,9 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
     if(!tax_glom_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
       stop("Unrecognized string passed to tax_glom_level. Please use one of species, genus, family, order, class, phylum, or domain.")
     }
-    # agglomerate to level of taxonomy
-    if(tax_glom_level == "domain"){
-      agglom_cols <- c("query_name", "domain")
-    } else if(tax_glom_level == "phylum"){
-      agglom_cols <- c("query_name", "domain", "phylum")
-    } else if(tax_glom_level == "class"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class")
-    } else if(tax_glom_level == "order"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order")
-    } else if(tax_glom_level == "family"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family")
-    } else if(tax_glom_level == "genus"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus")
-    } else if(tax_glom_level == "species"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus", "species")
-    }
-
-    taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
-      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
-      dplyr::ungroup() %>%
-      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select("lineage", "query_name", "n_unique_kmers")
+    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level)
   }
+
 
   # transform taxonomy annotate df into wide format
   taxonomy_annotate_df_wide <- pivot_wider_taxonomy_annotate(taxonomy_annotate_df)

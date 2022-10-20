@@ -11,6 +11,8 @@
 #' @return A data frame.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL){
   # if tax_glom_level is not defined, return the taxonomy_annotate_df unchanged
@@ -44,13 +46,13 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
   }
 
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
-    dplyr::select(genome_accession, lineage, query_name, n_unique_kmers) %>%
-    tidyr::separate(lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>% # split the lineage to each taxonomy rank
-    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>% # group using the lineage columns up to the user-specified taxonomic rank
-    dplyr::summarize(n_unique_kmers = sum(n_unique_kmers)) %>%
+    dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
+    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+    dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
     dplyr::ungroup() %>%
-    tidyr::unite(lineage, all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>% # make a new lineage string that includes only the agglom columns
-    dplyr::select(lineage, query_name, n_unique_kmers)
+    tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+    dplyr::select("lineage", "query_name", "n_unique_kmers")
 
   return(taxonomy_annotate_df)
 }
