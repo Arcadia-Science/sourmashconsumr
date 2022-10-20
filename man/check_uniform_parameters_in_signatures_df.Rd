@@ -7,14 +7,11 @@
 check_uniform_parameters_in_signatures_df(signatures_df)
 }
 \arguments{
-\item{signatures}{A data.frame representing many signatures.}
+\item{signatures_df}{A data frame representing many signatures.}
 }
 \value{
 NULL. Stops execution if parameters are not uniform.
 }
 \description{
 Check uniformity in sketch parameters
-}
-\examples{
-check_uniform_parameters_in_signatures_df(signatures)
 }

@@ -7,14 +7,11 @@
 pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 }
 \arguments{
-\item{taxonomy_annotate_df}{}
+\item{taxonomy_annotate_df}{Data frame containing outputs from sourmash taxonomy annotate in long format.}
 }
 \value{
 A data frame in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 }
 \description{
 Pivot sourmash_taxonomy_results to wide format
-}
-\examples{
-pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 }

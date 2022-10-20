@@ -7,14 +7,11 @@
 check_compare_df_sample_col_and_move_to_rowname(compare_df)
 }
 \arguments{
-\item{compare_df}{}
+\item{compare_df}{A data frame produced from read_compare_csv().}
 }
 \value{
-A tibble.
+A data frame.
 }
 \description{
 Internal function to check if the sample name is a column or a rowname and move it to a rowname if it is a column.
-}
-\examples{
-check_compare_df_sample_col_and_move_to_rowname(compare_df)
 }

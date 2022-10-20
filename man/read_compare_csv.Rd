@@ -20,5 +20,7 @@ A tibble.
 Read a CSV file output by sourmash compare
 }
 \examples{
+\dontrun{
 read_compare_csv("")
+}
 }

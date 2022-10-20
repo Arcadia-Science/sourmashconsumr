@@ -9,7 +9,7 @@ plot_compare_mds(compare_mds, label = TRUE)
 \arguments{
 \item{compare_mds}{A data.frame produced using make_compare_mds()}
 
-\item{label}{Boolean controlling whether sample labels are added to the plot. Default TRUE plots labels.}
+\item{label}{Boolean controlling whether sample labels are added to the plot. The default, TRUE, plots labels.}
 }
 \value{
 A ggplot2 plot.
@@ -18,5 +18,7 @@ A ggplot2 plot.
 Plot an MDS data.frame produced from the output of sourmash compare
 }
 \examples{
+\dontrun{
 plot_compare_mds(compare_mds)
+}
 }

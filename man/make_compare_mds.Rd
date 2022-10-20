@@ -7,14 +7,16 @@
 make_compare_mds(compare_df)
 }
 \arguments{
-\item{compare_df}{A tibble or data.frame produced by read_compare_csv() representing a (dis)similarity matrix output by sourmash compare.}
+\item{compare_df}{A data frame produced by read_compare_csv() representing a (dis)similarity matrix output by sourmash compare.}
 }
 \value{
-A data.frame.
+A data frame.
 }
 \description{
 Perform an MDS analysis from a sourmash compare output and produce a tidy data.frame
 }
 \examples{
+\dontrun{
 make_compare_mds(compare_df)
+}
 }

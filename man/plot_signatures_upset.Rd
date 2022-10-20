@@ -18,5 +18,7 @@ While based on ggplot2, `ComplexUpset::upset()` has a difficult syntax to parame
 To produce an alternative visualization, it may be easiest to run `sourmashconsumr::plot_signatures_upset` to retrieve the function source code and alter it.
 }
 \examples{
-plot_signatures_upset(upset_df)
+\dontrun{
+plot_signatures_upset()
+}
 }

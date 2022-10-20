@@ -9,6 +9,8 @@ plot_compare_heatmap(compare_df, seed = 42, ...)
 \arguments{
 \item{compare_df}{A tibble or data.frame produced by read_compare_csv() representing a (dis)similarity matrix output by sourmash compare.}
 
+\item{seed}{Random seed for function. Default is 42. Ensures repeatable plot outputs.}
+
 \item{...}{Arguments passed to base::heatmap().}
 }
 \value{
@@ -18,5 +20,7 @@ A plot of sourmash compare results.
 Plot a heatmap from a tibble of sourmash compare results.
 }
 \examples{
+\dontrun{
 plot_compare_heatmap()
+}
 }

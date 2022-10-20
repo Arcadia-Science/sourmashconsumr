@@ -18,5 +18,7 @@ A tibble.
 Read sourmash signatures into a dataframe
 }
 \examples{
+\dontrun{
 read_signature("tests/testthat/SRR18071810.sig")
+}
 }
