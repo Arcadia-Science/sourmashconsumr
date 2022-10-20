@@ -28,5 +28,5 @@ In case signatures were built from reads that have not been k-mer trimmed, there
 This filtering process may invalidate downstream rarefaction curve convergence estimation, as many of these methods evaluate singletons and doubletons in the data set.
 }
 \examples{
-from_signatures_to_rarefaction_df(signatures_df)
+from_signatures_to_rarefaction_df()
 }
