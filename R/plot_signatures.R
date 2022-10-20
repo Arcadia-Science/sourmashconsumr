@@ -141,7 +141,7 @@ from_signatures_to_upset_df <- function(signatures_df){
   # Each index contains a vector of hashes that were in that signature
   upset_list <- signatures_df %>%
     dplyr::group_by(.data$name) %>%
-    {setNames(dplyr::group_split(.data$.), dplyr::group_keys(.data$.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
+    {stats::setNames(dplyr::group_split(.data$.), dplyr::group_keys(.data$.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
 
   # extract just the minhashes
   upset_list <- lapply(upset_list, function(x) {x$mins})
