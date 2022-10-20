@@ -24,7 +24,6 @@ Imports:
     readr,
     rlang,
     stats,
-    stringr,
     tibble,
     tidyr,
     tidyselect,

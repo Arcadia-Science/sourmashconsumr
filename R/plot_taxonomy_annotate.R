@@ -3,7 +3,7 @@
 #' @description
 #' Inspired by phyloseq::tax_glom(), this method summarizes k-mer counts from genomes that have the same taxonomy at a user-specified taxonomy rank.
 #' Agglomeration occurs within each sample, meaning the number of k-mers is only summed within each query_name.
-#' This function returns a data frame with the columns lineage, query_name, and n_unique_kmers.
+#' This function returns a data frame with the columns `lineage`, `query_name`, and `n_unique_kmers`.
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.
 #' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level
@@ -14,6 +14,9 @@
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
+#' tax_glom_taxonomy_annotate()
+#' }
 tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL){
   # if tax_glom_level is not defined, return the taxonomy_annotate_df unchanged
   if(is.null(tax_glom_level)){
@@ -57,19 +60,24 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
   return(taxonomy_annotate_df)
 }
 
-#' Title
+#' Transform a taxonomy annotate data frame into an upset plot compliant data frame
 #'
 #' @description
-#' The file parameter was removed because the taxonomy_annotate_df is needed to add fill color to the upset plot.
-#' Using the file parameter would bypass the creation of this object in the global environment.
+#' `from_taxonomy_annotate_to_upset_inputs()` transforms a data frame with produced using read_taxonomy_annotate on many results produced by sourmash taxonomy annotate into a upset-compliant data frame.
+#' The function can optionally agglomerate to different levels of taxonomic rank (e.g. phylum) and then produce the upset compliant data frame after agglomeration.
 #'
-#' @param taxonomy_annotate_df
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.
+#' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
 #'
-#'
-#' @return
+#' @return A list. The first object in the list is an upset compliant data frame. The second is the taxonomy_annotate_df used to build the upset data frame. The last is the tax_glom_level.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
+#' \dontrun{
+#' from_taxonomy_annotate_to_upset_inputs()
+#' }
 from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
                                                    tax_glom_level = NULL){
 
@@ -79,15 +87,17 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 
   # select only columns that are relevant
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
-    dplyr::select(lineage, query_name) %>%
+    dplyr::select("lineage", "query_name") %>%
     dplyr::distinct()
 
   # turn data frame into list.
   # Each index in the list is named after the query_name it represents.
   # Each index contains a vector of lineages that were identified in the sample
+  . <- NULL # need to set . as global var because of whack line.
+  # I don't actually like this approach, but I think it's ok for now until I can find a workaround for said line.
   upset_list <- taxonomy_annotate_df %>%
-    dplyr::group_by(query_name) %>%
-    {setNames(dplyr::group_split(.), dplyr::group_keys(.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
+    dplyr::group_by(.data$query_name) %>%
+    {stats::setNames(dplyr::group_split(.), dplyr::group_keys(.)[[1]])} # absolutely whack line of code that allows us to set the list names by the group_by variable
 
   # extract just the minhashes
   upset_list <- lapply(upset_list, function(x) {x$lineage})
@@ -101,17 +111,24 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
   return(upset_inputs)
 }
 
-#' Title
+#' Plot an upset plot of lineage intersections between samples
 #'
 #' @description
-
-#' @param upset_inputs
-#' @param fill
+#' `plot_taxonomy_annotate_upset()` produces a ComplexUpset plot displaying the intersection of taxonomic lineages observed in many samples.
+#' The bar chart that displays the intersection size between samples can optionally be colored by taxonomy lineage (e.g. phylum).
 #'
-#' @return
+#' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
+#' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Uses the Set2 palette so cannot visualize more than 8 levels.
+#'
+#' @return A ComplexUpset plot
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
+#' \dontrun{
+#' plot_taxonomy_annotate_upset()
+#' }
 plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
   upset_df <- upset_inputs[[1]]
   taxonomy_annotate_df <- upset_inputs[[2]]
@@ -137,10 +154,10 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 
     # join together upset df with metadata in taxonomy_annotate_df
     taxonomy_annotate_df <-  taxonomy_annotate_df %>%
-      dplyr::select(lineage) %>%
-      tidyr::separate(lineage, into = fill_cols, sep = ";", remove = F) %>%
+      dplyr::select("lineage") %>%
+      tidyr::separate("lineage", into = fill_cols, sep = ";", remove = F) %>%
       dplyr::distinct() %>%
-      dplyr::select(lineage, fill = tidyselect::all_of(fill)) # make new column name based on the identity of parameter fill
+      dplyr::select("lineage", fill = tidyselect::all_of(fill)) # make new column name based on the identity of parameter fill
 
     upset_df <- upset_df %>%
       tibble::rownames_to_column("lineage") %>%
@@ -153,7 +170,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                             text_colors=c(on_background='black', on_bar='black'),
-                                                                            mapping=ggplot2::aes(fill= fill)) +
+                                                                            mapping=ggplot2::aes(fill = .data$fill)) +
                                  ggplot2::scale_fill_brewer(palette = "Set2") +
                                  ggplot2::labs(fill = fill))
   )
