@@ -39,12 +39,10 @@ from_list_to_upset_df <- function (upset_list) {
 
 #' Check uniformity in sketch parameters
 #'
-#' @param signatures A data.frame representing many signatures.
+#' @param signatures_df A data frame representing many signatures.
 #'
 #' @return NULL. Stops execution if parameters are not uniform.
 #'
-#' @examples
-#' check_uniform_parameters_in_signatures_df(signatures)
 check_uniform_parameters_in_signatures_df <- function(signatures_df){
   # check that there is only one k-mer size, scaled value, num, hash_function, seed, molecule type in the combined data.frame.
   # It doesn't make sense to visualize across these values as they represent fundamentally different things that are not inter-operable.
@@ -80,12 +78,10 @@ check_uniform_parameters_in_signatures_df <- function(signatures_df){
 
 #' Check for missing name, NAs in name, or empty name in a data frame of signatures
 #'
-#' @param signatures_df
+#' @param signatures_df A data frame representing many signatures.
 #'
 #' @return signatures_df with compliant names
 #'
-#' @examples
-#' check_and_edit_names_in_signatures_df(signatures_df)
 check_and_edit_names_in_signatures_df <- function(signatures_df){
   # if name isn't in the data frame, or if it is blank, calculate name from basename of filename
   if(!"name" %in% colnames(signatures_df)){

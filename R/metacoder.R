@@ -1,13 +1,10 @@
 #' Pivot sourmash_taxonomy_results to wide format
 #'
-#' @param taxonomy_annotate_df
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate in long format.
 #'
 #' @return A data frame in wide format. Variables expanded is n_unique_kmers and colnames are query_name.
 #'
 #' @importFrom rlang .data
-#'
-#' @examples
-#' pivot_wider_taxonomy_annotate(taxonomy_annotate_df)
 pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
   taxonomy_annotate_df_wide <- taxonomy_annotate_df %>%
     dplyr::select_if(colnames(.data$.) %in% c("genome_accession", "lineage", "query_name", "n_unique_kmers")) %>% # use select_if to allow genome_accession to be missing, as it won't be present in agglomerated columns

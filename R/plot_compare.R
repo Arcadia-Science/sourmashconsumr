@@ -1,6 +1,6 @@
 #' Internal function to check if the sample name is a column or a rowname and move it to a rowname if it is a column.
 #'
-#' @param compare_df
+#' @param compare_df A data frame produced from read_compare_csv().
 #'
 #' @return A data frame.
 #'
