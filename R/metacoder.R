@@ -78,7 +78,7 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
       dplyr::select(.data$genome_accession, .data$lineage, .data$query_name, .data$n_unique_kmers) %>%
       tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
       dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(.data$n_unique_kmers = sum(.data$n_unique_kmers)) %>%
+      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
       dplyr::ungroup() %>%
       tidyr::unite(.data$lineage, all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
       dplyr::select(.data$lineage, .data$query_name, .data$n_unique_kmers)
