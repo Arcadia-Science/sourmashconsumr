@@ -11,7 +11,8 @@ from_taxonomy_annotate_to_metacoder(
   tax_glom_level = NULL,
   groups = NULL,
   groups_prefix = "x",
-  ...
+  class_key = NULL,
+  class_regex = NULL
 )
 }
 \arguments{
@@ -27,7 +28,9 @@ from_taxonomy_annotate_to_metacoder(
 
 \item{groups_prefix}{Character. Ignored if groups is defined. Used to prefix query_name values for the metacoder function calc_n_samples().}
 
-\item{...}{Arguments passed to metacoder::parse_tax_data().}
+\item{class_key}{Character. class_key to use to build metacoder object. See metacoder documentation for more information. Ignored if you used pre-built sourmash GenBank or GTDB databases when running sourmash.}
+
+\item{class_regex}{Character. class_regex to use to build metacoder object. See metacoder documentation for more information. Ignored if you used pre-built sourmash GenBank or GTDB databases when running sourmash.}
 }
 \value{
 A metacoder taxmap object.
