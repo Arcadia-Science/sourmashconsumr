@@ -20,6 +20,7 @@ Imports:
     jsonlite,
     magrittr,
     metacoder,
+    phyloseq,
     purrr,
     readr,
     rlang,

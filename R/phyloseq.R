@@ -13,7 +13,7 @@ from_taxonomy_annotate_to_tax_table <- function(taxonomy_annotate_df) {
   tax_table <- taxonomy_annotate_df %>%
     dplyr::select("name", "lineage") %>%
     dplyr::distinct() %>%
-    dplyr::separate("lineage", into = c("domain", "phylum", "class", "order", "family", "genus", "species"), sep = ";") %>%
+    tidyr::separate("lineage", into = c("domain", "phylum", "class", "order", "family", "genus", "species"), sep = ";") %>%
     tibble::column_to_rownames("name")
   return(tax_table)
 }
@@ -32,7 +32,7 @@ from_taxonomy_annotate_to_tax_table <- function(taxonomy_annotate_df) {
 from_taxonomy_annotate_to_count_table <- function(taxonomy_annotate_df) {
   count_table <- taxonomy_annotate_df %>%
     dplyr::select("query_name", "name", "n_unique_kmers") %>% # select only the columns that have information we need
-    tidyr::pivot_wider(id_cols = "name", names_from = "query_name", values_from = "n_unique_kmers") %>% # transform to wide format
+    tidyr::pivot_wider(id_cols = "name", names_from = "query_name", values_from = "n_unique_kmers") # transform to wide format
 
   count_table[is.na(count_table)] <- 0 # replace all NAs with 0
 
@@ -60,10 +60,10 @@ from_taxonomy_annotate_to_count_table <- function(taxonomy_annotate_df) {
 #' }
 from_taxonomy_annotate_to_phyloseq <- function(taxonomy_annotate_df, metadata_df = NULL) {
   # add metadata checks
-  if(all(rownames(metadata) %in% taxonomy_annotate_df$query_name)){
+  if(all(rownames(metadata_df) %in% taxonomy_annotate_df$query_name)){
     stop("Not all metadata_df samples (row names) occur in the taxonomy_annotate_df (query_name).")
   }
-  if(all(taxonomy_annotate_df$query_name %in% rownames(metadata))){
+  if(all(taxonomy_annotate_df$query_name %in% rownames(metadata_df))){
     stop("Not all samples in taxonomy_annotate_df (query_name) have metadata_df samples (rown ames).")
   }
 

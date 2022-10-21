@@ -2,7 +2,7 @@
 % Please edit documentation in R/metacoder.R
 \name{from_taxonomy_annotate_to_metacoder}
 \alias{from_taxonomy_annotate_to_metacoder}
-\title{Import the output of sourmash taxonomy annotate into a taxmap metacoder object}
+\title{Transform the output of sourmash taxonomy annotate into a taxmap metacoder object}
 \usage{
 from_taxonomy_annotate_to_metacoder(
   taxonomy_annotate_df = NULL,
@@ -36,7 +36,7 @@ from_taxonomy_annotate_to_metacoder(
 A metacoder taxmap object.
 }
 \description{
-Import the output of sourmash taxonomy annotate into a taxmap metacoder object
+Transform the output of sourmash taxonomy annotate into a taxmap metacoder object
 }
 \examples{
 \dontrun{
