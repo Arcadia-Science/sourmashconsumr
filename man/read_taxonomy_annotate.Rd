@@ -24,7 +24,9 @@ read_taxonomy_annotate(
 A tibble.
 }
 \description{
-Read CSV file or files output by sourmash taxonomy annotate
+`read_taxonomy_annotate()` reads in one or many CSV files produced by the command line function sourmash taxonomy annotate.
+Genome matches can be filtered with `intersect_bp_threshold`, whose default value is 50,000 base pairs.
+It adds the column `n_unique_kmers`, the abundance-weighted number of unique k-mers overlapping between a query and its match.
 }
 \examples{
 \dontrun{

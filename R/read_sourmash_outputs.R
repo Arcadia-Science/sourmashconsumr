@@ -57,8 +57,12 @@ read_gather <- function(file, intersect_bp_threshold, ...){
   }
 }
 
-
 #' Read CSV file or files output by sourmash taxonomy annotate
+#'
+#' @description
+#' `read_taxonomy_annotate()` reads in one or many CSV files produced by the command line function sourmash taxonomy annotate.
+#' Genome matches can be filtered with `intersect_bp_threshold`, whose default value is 50,000 base pairs.
+#' It adds the column `n_unique_kmers`, the abundance-weighted number of unique k-mers overlapping between a query and its match.
 #'
 #' @param file Path to CSV file or files output by sourmash taxonomy annotate.
 #' @param intersect_bp_threshold Integer. Gather matches must have an intersect_bp greater than or equal to this value.
