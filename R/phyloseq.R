@@ -13,7 +13,8 @@ from_taxonomy_annotate_to_tax_table <- function(taxonomy_annotate_df) {
   tax_table <- taxonomy_annotate_df %>%
     dplyr::select("name", "lineage") %>%
     dplyr::distinct() %>%
-    tidyr::separate("lineage", into = c("domain", "phylum", "class", "order", "family", "genus", "species"), sep = ";") %>%
+    tidyr::separate("lineage", into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"),
+                    sep = ";", extra = "drop", fill = "right") %>%
     tibble::column_to_rownames("name")
   return(tax_table)
 }
@@ -59,20 +60,20 @@ from_taxonomy_annotate_to_count_table <- function(taxonomy_annotate_df) {
 #' from_taxonomy_annotate_to_phyloseq(taxonomy_annotate_df)
 #' }
 from_taxonomy_annotate_to_phyloseq <- function(taxonomy_annotate_df, metadata_df = NULL) {
-  # add metadata checks
-  if(all(rownames(metadata_df) %in% taxonomy_annotate_df$query_name)){
-    stop("Not all metadata_df samples (row names) occur in the taxonomy_annotate_df (query_name).")
-  }
-  if(all(taxonomy_annotate_df$query_name %in% rownames(metadata_df))){
-    stop("Not all samples in taxonomy_annotate_df (query_name) have metadata_df samples (rown ames).")
-  }
-
   # make tax_table and count_table objects
   tax_table <- from_taxonomy_annotate_to_tax_table(taxonomy_annotate_df)
   count_table <- from_taxonomy_annotate_to_count_table(taxonomy_annotate_df)
 
   # build phyloseq object
   if(!is.null(metadata_df)){
+    # add metadata checks
+    if(!all(rownames(metadata_df) %in% taxonomy_annotate_df$query_name)){
+      stop("Not all metadata_df samples (row names) occur in the taxonomy_annotate_df (query_name).")
+    }
+    if(!all(taxonomy_annotate_df$query_name %in% rownames(metadata_df))){
+      stop("Not all samples in taxonomy_annotate_df (query_name) have metadata_df samples (rown ames).")
+    }
+
     phyloseq_obj <- phyloseq::phyloseq(phyloseq::otu_table(count_table, taxa_are_rows = T),
                                        phyloseq::tax_table(as.matrix(tax_table)),
                                        phyloseq::sample_data(metadata_df))
