@@ -20,22 +20,38 @@ test_that("check that column names are the same as rownames for read_compare_csv
 # test read_taxonomy_annotate ---------------------------------------------
 
 test_that("check that read_taxonomy_annotate reads single files genbank db", {
-  df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
-  expect_equal(nrow(df_many), 177)
+  # we expect warning messages here given that some of the columns will be missing.
+  # because multiple files are read in, multiple warning messages are output
+  # expect_warning() only catches one warning
+  # suppressWarnings is the recommended way to handle multiple warning you don't care about:
+  # https://testthat.r-lib.org/reference/expect_error.html
+  suppressWarnings(df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv")))
+  expect_equal(nrow(df_many), 189)
 })
 
 test_that("check that read_taxonomy_annotate reads many files genbank db", {
-  df_one <- read_taxonomy_annotate("SRR19888423ass-vs-genbank-2022.03-k31.with-lineages-head23.csv")
+  expect_warning(
+    df_one <- read_taxonomy_annotate("SRR19888423ass-vs-genbank-2022.03-k31.with-lineages-head23.csv"),
+    regexp = "n_unique_weighted_found, sum_weighted_found, total_weighted_hashes"
+  )
   expect_equal(nrow(df_one), 22)
 })
 
 test_that("check that read_taxonomy_annotate reads single files gtdb reps db", {
-  df_many <- read_taxonomy_annotate(Sys.glob("*gtdbrs207_reps*lineages*.csv"))
+  # we expect warning messages here given that some of the columns will be missing.
+  # because multiple files are read in, multiple warning messages are output
+  # expect_warning() only catches one warning
+  # suppressWarnings is the recommended way to handle multiple warning you don't care about:
+  # https://testthat.r-lib.org/reference/expect_error.html
+  suppressWarnings(df_many <- read_taxonomy_annotate(Sys.glob("*gtdbrs207_reps*lineages*.csv")))
   expect_equal(nrow(df_many), 1062)
 })
 
 test_that("check that read_taxonomy_annotate reads many files gtdb reps db", {
-  df_one <- read_taxonomy_annotate("SRR5947006_gather_gtdbrs207_reps.with-lineages.csv")
+  expect_warning(
+    df_one <- read_taxonomy_annotate("SRR5947006_gather_gtdbrs207_reps.with-lineages.csv"),
+    regexp = "n_unique_weighted_found, sum_weighted_found, total_weighted_hashes"
+  )
   expect_equal(nrow(df_one), 185)
 })
 
@@ -82,3 +98,25 @@ test_that("sigs read with read_signature from diff ver. sourmash can be combined
    expect_equal(length(unique(df$filename)), 2)
 })
 
+
+# sourmash gather ---------------------------------------------------------
+
+test_that("read_gather works with outputs from different versions of sourmash", {
+  gather_files <- Sys.glob("*gather.csv")
+  # we expect warning messages here given that some of the columns will be missing.
+  # because multiple files are read in, multiple warning messages are output
+  # expect_warning() only catches one warning
+  # suppressWarnings is the recommended way to handle multiple warning you don't care about:
+  # https://testthat.r-lib.org/reference/expect_error.html
+  suppressWarnings(gather_df <- read_gather(gather_files, intersect_bp_threshold = 0))
+  # expect df of correct dimensions when read in with purrr
+  expect_equal(ncol(gather_df), 33)
+  # lots of columns are missing in this one, so we expect to be warned about it.
+  expect_warning(read_gather("47+63_x_gtdb-rs202.gather.csv"),
+                 regexp = "The following named parsers don't match the column names: ksize, moltype, scaled, query_n_hashes, query_abundance, query_containment_ani, match_containment_ani, average_containment_ani, max_containment_ani, potential_false_negative, n_unique_weighted_found, sum_weighted_found, total_weighted_hashes"
+  )
+  # no columns are missing in this one, so we don't expect any problems
+  gather_df1 <- read_gather("test1.v450.gather.csv", intersect_bp_threshold = 50000)
+  # make sure filtering worked
+  expect_true(all(gather_df1$intersect_bp > 50000))
+})
