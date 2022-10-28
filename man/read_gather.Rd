@@ -4,7 +4,7 @@
 \alias{read_gather}
 \title{Read CSV file or files output by sourmash gather}
 \usage{
-read_gather(file, intersect_bp_threshold, ...)
+read_gather(file, intersect_bp_threshold = 0, ...)
 }
 \arguments{
 \item{file}{Path to CSV file or files output by sourmash gather.}
@@ -17,7 +17,8 @@ read_gather(file, intersect_bp_threshold, ...)
 A tibble.
 }
 \description{
-Read CSV file or files output by sourmash gather
+`read_gather()` reads in one or many CSV files produced by the command line function sourmash taxonomy annotate.
+Genome matches can be filtered with `intersect_bp_threshold`, whose default value is 0 base pairs.
 }
 \examples{
 \dontrun{

@@ -20,8 +20,8 @@ test_that("check that column names are the same as rownames for read_compare_csv
 # test read_taxonomy_annotate ---------------------------------------------
 
 test_that("check that read_taxonomy_annotate reads single files genbank db", {
-  df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
-  expect_equal(nrow(df_many), 177)
+ df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
+  expect_equal(nrow(df_many), 189)
 })
 
 test_that("check that read_taxonomy_annotate reads many files genbank db", {
@@ -82,3 +82,16 @@ test_that("sigs read with read_signature from diff ver. sourmash can be combined
    expect_equal(length(unique(df$filename)), 2)
 })
 
+
+# sourmash gather ---------------------------------------------------------
+
+test_that("read_gather works with outputs from different versions of sourmash", {
+  gather_files <- Sys.glob("*gather.csv")
+  gather_df <- read_gather(gather_files, intersect_bp_threshold = 0)
+  # expect df of correct dimensions when read in with purrr
+  expect_equal(ncol(gather_df), 33)
+  # no columns are missing in this one, so we don't expect any problems
+  gather_df1 <- read_gather("test1.v450.gather.csv", intersect_bp_threshold = 50000)
+  # make sure filtering worked
+  expect_true(all(gather_df1$intersect_bp > 50000))
+})
