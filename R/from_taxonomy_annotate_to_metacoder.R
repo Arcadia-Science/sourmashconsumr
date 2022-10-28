@@ -13,7 +13,7 @@ pivot_wider_taxonomy_annotate <- function(taxonomy_annotate_df){
   return(taxonomy_annotate_df_wide)
 }
 
-#' Import the output of sourmash taxonomy annotate into a taxmap metacoder object
+#' Transform the output of sourmash taxonomy annotate into a taxmap metacoder object
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. If specified, file is ignored. Can contain results from one or many runs of sourmash taxonomy annotate.
 #' @inheritParams read_taxonomy_annotate
