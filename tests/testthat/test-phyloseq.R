@@ -7,7 +7,7 @@ test_that("from_taxonomy_annotate_to_tax_table produces a taxonomy table", {
   tax_annot_genbank <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
   tax_table_genbank <- from_taxonomy_annotate_to_tax_table(tax_annot_genbank)
   expect_equal(colnames(tax_table_genbank), c('domain', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'))
-  expect_equal(nrow(tax_table_genbank), 110)
+  expect_equal(nrow(tax_table_genbank), 122)
 })
 
 test_that("from_taxonomy_annotate_to_count_table produces a count table", {
@@ -21,7 +21,7 @@ test_that("from_taxonomy_annotate_to_count_table produces a count table", {
   count_table_genbank <- from_taxonomy_annotate_to_count_table(tax_annot_genbank)
   expect_equal(colSums(count_table_genbank),
                c('SRR19888423' = 25012, 'SRR19888427' = 32318,
-                 'SRR19888432' = 27645, 'SRR19888434' = 31283))
+                 'SRR19888432' = 27871, 'SRR19888434' = 31283))
 })
 
 test_that("from_taxonomy_annotate_to_phyloseq", {
