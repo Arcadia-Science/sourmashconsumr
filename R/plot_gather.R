@@ -18,16 +18,16 @@
 #' plot_gather_classified(gather_df)
 #' }
 plot_gather_classified <- function(gather_df) {
-  # generate a dataframe that contains information about the percent of the sample that was unclassified.
-  # then, bind this new dataframe to the sourmash_taxonomy dataframe within the plot
+  # generate a data frame that contains information about the percent of the sample that was unclassified.
+  # then, bind this new data frame to the sourmash_taxonomy dataframe within the plot
   # that way, this information is not carried on beyond this plot.
-  gather_df <- read_gather(Sys.glob("tests/testthat/*gather*.csv")) %>%
-    dplyr::mutate(database = basename(filename))
+  gather_df <- gather_df %>%
+    dplyr::mutate(database = basename(.data$filename))
 
   gather_df_unclassified <- gather_df %>%
     dplyr::group_by(.data$query_name) %>%
     dplyr::summarize(sum_f_unique_weighted = sum(.data$f_unique_weighted)) %>%
-    dplyr::mutate(f_unique_weighted = 1 - sum_f_unique_weighted,
+    dplyr::mutate(f_unique_weighted = 1 - .data$sum_f_unique_weighted,
                   database = "unclassified") %>%
     dplyr::select(-"sum_f_unique_weighted")
 
@@ -35,7 +35,7 @@ plot_gather_classified <- function(gather_df) {
     dplyr::bind_rows(gather_df_unclassified)
 
   ggplot2::ggplot(gather_df,
-                  ggplot2::aes(x = query_name, y = f_unique_weighted, fill = database)) +
+                  ggplot2::aes(x = "query_name", y = "f_unique_weighted", fill = "database")) +
     ggplot2::geom_col() +
     ggplot2::theme_classic() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90)) +
@@ -121,6 +121,9 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
       stop("gather_df must be defined to color_by_database. Please use the gather_df you used as input to from_gather_to_upset_df().")
     }
 
+    gather_df <- gather_df %>%
+      dplyr::mutate(database = basename(.data$filename))
+
     db_df <- gather_df %>%
       dplyr::select('genome_accession', 'database') %>%
       dplyr::distinct()
@@ -131,6 +134,7 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
     check_db_df <- db_df %>%
       dplyr::group_by(.data$genome_accession) %>%
       dplyr::tally()
+
     if(any(check_db_df$n > 1)){
       stop("At least one genome accession was in multiple databases for the supplied gather results. Either use color_by_database == FALSE or limit which samples you plot.")
     }
@@ -140,12 +144,12 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
       dplyr::left_join(db_df, by = "genome_accession") %>%
       tibble::column_to_rownames("genome_accession")
 
-    ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
-                        base_annotations = list(
-                          '# lineages' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                                                         text_colors=c(on_background='black', on_bar='black'),
-                                                                         mapping=ggplot2::aes(fill = .data$database)) +
-                            ggplot2::scale_fill_brewer(palette = "Set2"))
+    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
+                                     base_annotations = list(
+                                       '# lineages' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                                                                      text_colors=c(on_background='black', on_bar='black'),
+                                                                                      mapping=ggplot2::aes(fill = .data$database)) +
+                                         ggplot2::scale_fill_brewer(palette = "Set2"))
     )
   }
   return(upset_plt)
