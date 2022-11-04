@@ -5,10 +5,11 @@
 #' @param with_query_name Boolean indicating whether the column name "query_name" should be included.
 #'
 #' @return A character vector of column names to be used for agglomeration
+#' @export
 #'
 #' @examples
-#' make_agglom_cols("species", with_query_name = F)
-make_agglom_cols <- function(tax_glom_level, with_query_name = F){
+#' make_agglom_cols("species", with_query_name = FALSE)
+make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
   if(tax_glom_level == "domain"){
     agglom_cols <- c("domain")
   } else if(tax_glom_level == "phylum"){
@@ -25,11 +26,11 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = F){
     agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
   }
 
-  if(with_query_name == T){
+  if(with_query_name == TRUE){
     agglom_cols <- c("query_name", agglom_cols)
     return(agglom_cols)
   }
-  if(with_query_name == F){
+  if(with_query_name == FALSE){
     return(agglom_cols)
   }
 }
@@ -201,7 +202,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 #' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
 #' @param palette Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.
 #'
-#' @return
+#' @return A ggplot2 plot
 #' @export
 #'
 #' @importFrom rlang .data
@@ -235,7 +236,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
     palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
   }
   # otherwise ramp up from the user-defined palette
-  palette <- colorRampPalette(palette)(length(unique(data$y)))
+  palette <- grDevices::colorRampPalette(palette)(length(unique(data$y)))
 
   sankey_plt <- ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
     ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +

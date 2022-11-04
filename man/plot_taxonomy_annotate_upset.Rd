@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_taxonomy_annotate.R
 \name{plot_taxonomy_annotate_upset}
 \alias{plot_taxonomy_annotate_upset}
-\title{Plot an upset plot of lineage intersections between samples}
+\title{Visualize an upset plot of taxonomic lineage intersections between samples}
 \usage{
 plot_taxonomy_annotate_upset(upset_inputs, fill = NULL)
 }
