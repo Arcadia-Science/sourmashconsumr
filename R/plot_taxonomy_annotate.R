@@ -210,6 +210,10 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
   } else {
     agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+    # check if there are NAs in the strain column and emit a warning, as these will be dropped and the plot will look weird
+    if(sum(is.na(taxonomy_annotate_df$strain)) > 0){
+      stop("Some lineages are missing strain information. This will lead computation to fail for stat_parallel_sets_axes(). Use tax_glom_level = 'species' or a higher taxonomic rank to produce a plot")
+    }
   }
 
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
@@ -228,7 +232,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
   # otherwise ramp up from the user-defined palette
   palette <- colorRampPalette(palette)(length(unique(data$y)))
 
-  ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
+  sankey_plt <- ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
     ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +
     ggforce::geom_parallel_sets_axes(axis.width = 0.2, ggplot2::aes(fill = .data$y)) +
     ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25) +
@@ -244,4 +248,6 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
                                 breaks = 1:(length(agglom_cols) + 1),
                                 limits = c(.75, length(agglom_cols) + 1)) +
     ggplot2::scale_fill_manual(values = palette)
+
+  return(sankey_plt)
 }
