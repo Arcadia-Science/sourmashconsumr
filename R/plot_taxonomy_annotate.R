@@ -1,41 +1,37 @@
 # taxonomy agglomeration --------------------------------------------------
-# helper function for taxonomy agglomeration
+#' Helper function to define column names for taxonomy agglomeration
+#'
+#' @param tax_glom_level Character. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species".
+#' @param with_query_name Boolean indicating whether the column name "query_name" should be included.
+#'
+#' @return A character vector of column names to be used for agglomeration
+#'
+#' @examples
+#' make_agglom_cols("species", with_query_name = F)
 make_agglom_cols <- function(tax_glom_level, with_query_name = F){
+  if(tax_glom_level == "domain"){
+    agglom_cols <- c("domain")
+  } else if(tax_glom_level == "phylum"){
+    agglom_cols <- c("domain", "phylum")
+  } else if(tax_glom_level == "class"){
+    agglom_cols <- c("domain", "phylum", "class")
+  } else if(tax_glom_level == "order"){
+    agglom_cols <- c("domain", "phylum", "class", "order")
+  } else if(tax_glom_level == "family"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family")
+  } else if(tax_glom_level == "genus"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus")
+  } else if(tax_glom_level == "species"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
+  }
+
   if(with_query_name == T){
-    if(tax_glom_level == "domain"){
-      agglom_cols <- c("query_name", "domain")
-    } else if(tax_glom_level == "phylum"){
-      agglom_cols <- c("query_name", "domain", "phylum")
-    } else if(tax_glom_level == "class"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class")
-    } else if(tax_glom_level == "order"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order")
-    } else if(tax_glom_level == "family"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family")
-    } else if(tax_glom_level == "genus"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus")
-    } else if(tax_glom_level == "species"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus", "species")
-    }
+    agglom_cols <- c("query_name", agglom_cols)
+    return(agglom_cols)
   }
   if(with_query_name == F){
-    if(tax_glom_level == "domain"){
-      agglom_cols <- c("domain")
-    } else if(tax_glom_level == "phylum"){
-      agglom_cols <- c("domain", "phylum")
-    } else if(tax_glom_level == "class"){
-      agglom_cols <- c("domain", "phylum", "class")
-    } else if(tax_glom_level == "order"){
-      agglom_cols <- c("domain", "phylum", "class", "order")
-    } else if(tax_glom_level == "family"){
-      agglom_cols <- c("domain", "phylum", "class", "order", "family")
-    } else if(tax_glom_level == "genus"){
-      agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus")
-    } else if(tax_glom_level == "species"){
-      agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
-    }
+    return(agglom_cols)
   }
-  return(agglom_cols)
 }
 
 #' Agglomerate counts of same lineage to specified level of taxonomy.
@@ -195,9 +191,15 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 
 #' Visualize a sankey diagram from taxonomic lineages from one or many samples
 #'
-#' @param taxonomy_annotate_df
-#' @param tax_glom_level
-#' @param palette
+#' @description
+#' `plot_taxonomy_annotate_sankey()` plots a sankey diagram from the output of sourmash taxonomy annotate.
+#' The input data frame can contain one or many samples.
+#' If there are many samples, abundances of each lineage are summarized and sample-level information is lost.
+#' If the parameter `tax_glom_level` is specified, the plot will be summarized to that taxonomic rank (e.g. if "order" is specified, only domain, phylum, class, and order will be plotted).
+#'
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. If specified, agglomeration occurs across all queries.
+#' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
+#' @param palette Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.
 #'
 #' @return
 #' @export
@@ -205,6 +207,9 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
+#' plot_taxonomy_annotate_sankey()
+#' }
 plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL){
   if(!is.null(tax_glom_level)){
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
