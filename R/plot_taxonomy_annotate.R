@@ -70,23 +70,8 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
     if(!tax_glom_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
       stop("Unrecognized string passed to tax_glom_level. Please use one of species, genus, family, order, class, phylum, or domain.")
     }
-    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
     # agglomerate to level of taxonomy
-    # if(tax_glom_level == "domain"){
-    #   agglom_cols <- c("query_name", "domain")
-    # } else if(tax_glom_level == "phylum"){
-    #   agglom_cols <- c("query_name", "domain", "phylum")
-    # } else if(tax_glom_level == "class"){
-    #   agglom_cols <- c("query_name", "domain", "phylum", "class")
-    # } else if(tax_glom_level == "order"){
-    #   agglom_cols <- c("query_name", "domain", "phylum", "class", "order")
-    # } else if(tax_glom_level == "family"){
-    #   agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family")
-    # } else if(tax_glom_level == "genus"){
-    #   agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus")
-    # } else if(tax_glom_level == "species"){
-    #   agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus", "species")
-    # }
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
@@ -211,6 +196,8 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 #' Visualize a sankey diagram from taxonomic lineages from one or many samples
 #'
 #' @param taxonomy_annotate_df
+#' @param tax_glom_level
+#' @param palette
 #'
 #' @return
 #' @export
@@ -218,17 +205,15 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 #' @importFrom rlang .data
 #'
 #' @examples
-plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL){
+plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL){
   if(!is.null(tax_glom_level)){
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
   } else {
     agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
   }
 
-
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
     tidyr::separate(.data$lineage, into = agglom_cols, sep = ";", remove = F, fill = "right", extra = "drop") %>%
-    #dplyr::group_by(.data$domain, .data$phylum, .data$class, .data$family, .data$order, .data$genus, .data$species) %>%
     dplyr::group_by_at(dplyr::vars(tidyselect::all_of(agglom_cols))) %>%
     dplyr::summarize(sum_n_unique_kmers = sum(.data$n_unique_kmers))
 
@@ -236,7 +221,12 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
   data <- ggforce::gather_set_data(taxonomy_annotate_df, 1:length(agglom_cols))
 
   # create a palette that recycles colors so each taxonomic label will be colorful
-  palette <- colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(length(unique(data$y)))
+  if(is.null(palette)){
+    # if the user doesn't supply a palette, use Set2
+    palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
+  }
+  # otherwise ramp up from the user-defined palette
+  palette <- colorRampPalette(palette)(length(unique(data$y)))
 
   ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
     ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +
@@ -249,7 +239,8 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
                    axis.ticks.x = ggplot2::element_blank(),
                    legend.position = "None") +
     ggplot2::labs(x = "tanomic rank") +
-    ggplot2::scale_x_continuous(labels = c(agglom_cols, ""), # buffer the last axis so full names have space to print to viz
+    # buffer the last axis so full names have space to print to viz
+    ggplot2::scale_x_continuous(labels = c(agglom_cols, ""),
                                 breaks = 1:(length(agglom_cols) + 1),
                                 limits = c(.75, length(agglom_cols) + 1)) +
     ggplot2::scale_fill_manual(values = palette)
