@@ -1,3 +1,40 @@
+# taxonomy agglomeration --------------------------------------------------
+#' Helper function to define column names for taxonomy agglomeration
+#'
+#' @param tax_glom_level Character. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species".
+#' @param with_query_name Boolean indicating whether the column name "query_name" should be included.
+#'
+#' @return A character vector of column names to be used for agglomeration
+#' @export
+#'
+#' @examples
+#' make_agglom_cols("species", with_query_name = FALSE)
+make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
+  if(tax_glom_level == "domain"){
+    agglom_cols <- c("domain")
+  } else if(tax_glom_level == "phylum"){
+    agglom_cols <- c("domain", "phylum")
+  } else if(tax_glom_level == "class"){
+    agglom_cols <- c("domain", "phylum", "class")
+  } else if(tax_glom_level == "order"){
+    agglom_cols <- c("domain", "phylum", "class", "order")
+  } else if(tax_glom_level == "family"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family")
+  } else if(tax_glom_level == "genus"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus")
+  } else if(tax_glom_level == "species"){
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
+  }
+
+  if(with_query_name == TRUE){
+    agglom_cols <- c("query_name", agglom_cols)
+    return(agglom_cols)
+  }
+  if(with_query_name == FALSE){
+    return(agglom_cols)
+  }
+}
+
 #' Agglomerate counts of same lineage to specified level of taxonomy.
 #'
 #' @description
@@ -31,21 +68,7 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
       stop("Unrecognized string passed to tax_glom_level. Please use one of species, genus, family, order, class, phylum, or domain.")
     }
     # agglomerate to level of taxonomy
-    if(tax_glom_level == "domain"){
-      agglom_cols <- c("query_name", "domain")
-    } else if(tax_glom_level == "phylum"){
-      agglom_cols <- c("query_name", "domain", "phylum")
-    } else if(tax_glom_level == "class"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class")
-    } else if(tax_glom_level == "order"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order")
-    } else if(tax_glom_level == "family"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family")
-    } else if(tax_glom_level == "genus"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus")
-    } else if(tax_glom_level == "species"){
-      agglom_cols <- c("query_name", "domain", "phylum", "class", "order", "family", "genus", "species")
-    }
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
@@ -59,6 +82,8 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
 
   return(taxonomy_annotate_df)
 }
+
+# upset plot --------------------------------------------------------------
 
 #' Transform a taxonomy annotate data frame into an upset plot compliant data frame
 #'
@@ -111,7 +136,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
   return(upset_inputs)
 }
 
-#' Plot an upset plot of lineage intersections between samples
+#' Visualize an upset plot of taxonomic lineage intersections between samples
 #'
 #' @description
 #' `plot_taxonomy_annotate_upset()` produces a ComplexUpset plot displaying the intersection of taxonomic lineages observed in many samples.
@@ -136,26 +161,12 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
 
   if(!is.null(fill)){
     # figure out which columns can encode fill color from taxglom
-    if(tax_glom_level == "domain"){
-      fill_cols <- c("domain")
-    } else if(tax_glom_level == "phylum"){
-      fill_cols <- c("domain", "phylum")
-    } else if(tax_glom_level == "class"){
-      fill_cols <- c("domain", "phylum", "class")
-    } else if(tax_glom_level == "order"){
-      fill_cols <- c("domain", "phylum", "class", "order")
-    } else if(tax_glom_level == "family"){
-      fill_cols <- c("domain", "phylum", "class", "order", "family")
-    } else if(tax_glom_level == "genus"){
-      fill_cols <- c("domain", "phylum", "class", "order", "family", "genus")
-    } else if(tax_glom_level == "species"){
-      fill_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
-    }
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
 
     # join together upset df with metadata in taxonomy_annotate_df
     taxonomy_annotate_df <-  taxonomy_annotate_df %>%
       dplyr::select("lineage") %>%
-      tidyr::separate("lineage", into = fill_cols, sep = ";", remove = F) %>%
+      tidyr::separate("lineage", into = agglom_cols, sep = ";", remove = F) %>%
       dplyr::distinct() %>%
       dplyr::select("lineage", fill = tidyselect::all_of(fill)) # make new column name based on the identity of parameter fill
 
@@ -175,4 +186,74 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
                                  ggplot2::labs(fill = fill))
   )
   return(plt)
+}
+
+# sankey diagram ----------------------------------------------------------
+
+#' Visualize a sankey diagram from taxonomic lineages from one or many samples
+#'
+#' @description
+#' `plot_taxonomy_annotate_sankey()` plots a sankey diagram from the output of sourmash taxonomy annotate.
+#' The input data frame can contain one or many samples.
+#' If there are many samples, abundances of each lineage are summarized and sample-level information is lost.
+#' If the parameter `tax_glom_level` is specified, the plot will be summarized to that taxonomic rank (e.g. if "order" is specified, only domain, phylum, class, and order will be plotted).
+#'
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. If specified, agglomeration occurs across all queries.
+#' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
+#' @param palette Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.
+#'
+#' @return A ggplot2 plot
+#' @export
+#'
+#' @importFrom rlang .data
+#'
+#' @examples
+#' \dontrun{
+#' plot_taxonomy_annotate_sankey()
+#' }
+plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL){
+  if(!is.null(tax_glom_level)){
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
+  } else {
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+    # check if there are NAs in the strain column and emit a warning, as these will be dropped and the plot will look weird
+    if(sum(is.na(taxonomy_annotate_df$strain)) > 0){
+      stop("Some lineages are missing strain information. This will lead computation to fail for stat_parallel_sets_axes(). Use tax_glom_level = 'species' or a higher taxonomic rank to produce a plot")
+    }
+  }
+
+  taxonomy_annotate_df <- taxonomy_annotate_df %>%
+    tidyr::separate(.data$lineage, into = agglom_cols, sep = ";", remove = F, fill = "right", extra = "drop") %>%
+    dplyr::group_by_at(dplyr::vars(tidyselect::all_of(agglom_cols))) %>%
+    dplyr::summarize(sum_n_unique_kmers = sum(.data$n_unique_kmers))
+
+  # format for ggforce parallel sets
+  data <- ggforce::gather_set_data(taxonomy_annotate_df, 1:length(agglom_cols))
+
+  # create a palette that recycles colors so each taxonomic label will be colorful
+  if(is.null(palette)){
+    # if the user doesn't supply a palette, use Set2
+    palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
+  }
+  # otherwise ramp up from the user-defined palette
+  palette <- grDevices::colorRampPalette(palette)(length(unique(data$y)))
+
+  sankey_plt <- ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
+    ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +
+    ggforce::geom_parallel_sets_axes(axis.width = 0.2, ggplot2::aes(fill = .data$y)) +
+    ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(axis.line.y = ggplot2::element_blank(),
+                   axis.text.y = ggplot2::element_blank(),
+                   axis.ticks.y = ggplot2::element_blank(),
+                   axis.ticks.x = ggplot2::element_blank(),
+                   legend.position = "None") +
+    ggplot2::labs(x = "tanomic rank") +
+    # buffer the last axis so full names have space to print to viz
+    ggplot2::scale_x_continuous(labels = c(agglom_cols, ""),
+                                breaks = 1:(length(agglom_cols) + 1),
+                                limits = c(.75, length(agglom_cols) + 1)) +
+    ggplot2::scale_fill_manual(values = palette)
+
+  return(sankey_plt)
 }

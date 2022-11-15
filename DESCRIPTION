@@ -16,8 +16,10 @@ RoxygenNote: 7.2.1
 Imports: 
     ComplexUpset,
     dplyr,
+    ggforce,
     ggplot2,
     ggrepel,
+    grDevices,
     jsonlite,
     magrittr,
     metacoder,
