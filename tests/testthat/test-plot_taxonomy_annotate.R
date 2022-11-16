@@ -19,6 +19,14 @@ test_that("taxonomic agglomeration works correctly", {
     semicoloncount <- unique(stringr::str_count(pattern = ";", string = tax_glom_df3$lineage))
     expect_equal(semicoloncount, 1) # at phylum level there should only be 1 semicolon per lineage
   }
+  # tax glom works for f_unique_to_query too
+  tax_glom_df4 <- tax_glom_taxonomy_annotate(tax_annot_df2, tax_glom_level = "phylum", glom_var = "f_unique_to_query")
+  # the column names should contain f_unique_to_query
+  expect_equal(colnames(tax_glom_df4), c("lineage", "query_name", "f_unique_to_query"))
+  # the total sum of f_unique_to_query shouldn't change after tax glom
+  expect_equal(sum(tax_annot_df2$f_unique_to_query), sum(tax_glom_df4$f_unique_to_query))
+  # there should be fewer rows after agglomeration
+  expect_true(nrow(tax_annot_df2) > nrow(tax_glom_df4))
 })
 
 test_that("make_agglom_cols returns the right columns", {
@@ -27,8 +35,8 @@ test_that("make_agglom_cols returns the right columns", {
   expect_equal(make_agglom_cols(tax_glom_level = "order", with_query_name = F),
                c("domain", "phylum", "class", "order"))
 })
-# upset -------------------------------------------------------------------
 
+# upset -------------------------------------------------------------------
 
 test_that("from_taxonomy_annotate_to_upset_inputs works correctly", {
   tax_annot_df1 <- read_taxonomy_annotate(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"), separate_lineage = T)
@@ -53,7 +61,6 @@ test_that("plot_taxonomy_annotate_upset returns a plot", {
   expect_equal(class(plt)[[3]], "ggplot")
 })
 
-
 # sankey plot -------------------------------------------------------------
 
 test_that("plot_taxonomy_annotate_sankey returns a plot", {
@@ -70,4 +77,15 @@ test_that("plot_taxonomy_annotate_sankey returns a plot", {
                                                tax_glom_level = "order",
                                                palette = "#444444")
   expect_equal(length(sankey_plt2$layers), 3)
+})
+
+# ts alluvial -------------------------------------------------------------
+
+test_that("plot_taxonomy_annotate_ts_alluvial returns a plot", {
+  taxonomy_annotate_df <- read_taxonomy_annotate(Sys.glob("SRR19*lineage*.csv"), separate_lineage = T)
+  time_df <- data.frame(query_name = unique(taxonomy_annotate_df$query_name),
+                        time = c(1, 2, 3, 4))
+  alluvial_plt <- plot_taxonomy_annotate_ts_alluvial(taxonomy_annotate_df, time_df = time_df, tax_glom_level = "genus")
+  expect_equal(class(alluvial_plt)[2], "ggplot")
+  expect_equal(length(alluvial_plt$layers), 2)
 })

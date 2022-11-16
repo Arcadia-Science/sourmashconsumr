@@ -295,9 +295,12 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' @importFrom rlang .data
 #'
 #' @examples
+#' \dontrun{
+#' plot_taxonomy_annotate_ts_alluvial()
+#' }
 plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01){
   # check formatting of time_df -- is the first column named query_name, and does it contain all of the query_names that are in the taxonomy_annotate_df?
-  if(colnames(time_df) != c("query_name", "time")){
+  if(!all(colnames(time_df) == c("query_name", "time"))){
     stop("The column names of time_df must be query_name and time. Please update the column names using colnames(time_df) <- c('query_name', 'time') and re-run.")
   }
 
@@ -334,7 +337,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
     # rename the column that will represent the alluvium ribbons to "tax_glom_col" so we can pass it to ggplot to as .data$
     dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_to_query") %>%
-    dplyr::mutate(tax_glom_col = ifelse(lineage %in% keep_taxa$lineage, tax_glom_col, "other")) %>%
+    dplyr::mutate(tax_glom_col = ifelse(.data$lineage %in% keep_taxa$lineage, .data$tax_glom_col, "other")) %>%
     dplyr::select(-"lineage") %>%
     # creating the "other" designation creates a variable that is duplicated.
     # ggalluvium is not smart enough to sum over that variable itself a throws and error
@@ -351,7 +354,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     ggplot2::labs(x = "Time", y = "Fraction of metagenome", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggplot2::geom_text(stat = "alluvium", size = 2, decreasing = FALSE, min.y = 0.005)
+    ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005)
 
   return(alluvial_plt)
 }
