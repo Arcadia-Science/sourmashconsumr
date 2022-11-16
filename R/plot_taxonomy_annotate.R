@@ -274,7 +274,10 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 
 # time series alluvial plot -----------------------------------------------
 
-#' Title
+#' Visualize an allivual flow plot from taxonomic lineages from one or many samples
+#'
+#' @description
+#' `plot_taxonomy_annotate_ts_alluvial()` creates an alluvial flow diagram from the output of sourmash taxonomy annotate for metagenomes that were sequenced in time series.
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate.
 #' Can contain results from one or many runs of sourmash taxonomy annotate.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_taxonomy_annotate.R
 \name{plot_taxonomy_annotate_ts_alluvial}
 \alias{plot_taxonomy_annotate_ts_alluvial}
-\title{Title}
+\title{Visualize an allivual flow plot from taxonomic lineages from one or many samples}
 \usage{
 plot_taxonomy_annotate_ts_alluvial(
   taxonomy_annotate_df,
@@ -32,7 +32,7 @@ Lineages that occur below this threshold are grouped into an "other" category.}
 A ggplot2 plot
 }
 \description{
-Title
+`plot_taxonomy_annotate_ts_alluvial()` creates an alluvial flow diagram from the output of sourmash taxonomy annotate for metagenomes that were sequenced in time series.
 }
 \examples{
 \dontrun{
