@@ -4,12 +4,18 @@
 \alias{tax_glom_taxonomy_annotate}
 \title{Agglomerate counts of same lineage to specified level of taxonomy.}
 \usage{
-tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = NULL)
+tax_glom_taxonomy_annotate(
+  taxonomy_annotate_df,
+  tax_glom_level = NULL,
+  glom_var = "n_unique_kmers"
+)
 }
 \arguments{
 \item{taxonomy_annotate_df}{Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.}
 
 \item{tax_glom_level}{Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level}
+
+\item{glom_var}{Character. One of "n_unique_kmers" or "f_unique_to_query".}
 }
 \value{
 A data frame.
