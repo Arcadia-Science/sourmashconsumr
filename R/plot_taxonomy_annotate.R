@@ -271,3 +271,87 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 
   return(sankey_plt)
 }
+
+# time series alluvial plot -----------------------------------------------
+
+#' Title
+#'
+#' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate.
+#' Can contain results from one or many runs of sourmash taxonomy annotate.
+#' If specified, agglomeration occurs per query.
+#' @param time_df A data frame. The first column should contain all of the values in the query_name column of taxonomy_annotate_df and should be called "query_name".
+#' The second column should indicate the time that the sample was taken and should be named "time".
+#' This plot requires that time be specified as numeric values (e.g. if samples were taken at 2 weeks, 1 month, and 2 months, the values should be specified as 0.5, 1, and 2);
+#' this allows the function to appropriately sort and bound the x axis.
+#' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate the fraction of the metagenome that matched to a genome in the database (f_unique_to_query).
+#' Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
+#' @param fraction_threshold A number between 0-1. Defaults to 0.01.
+#' The minimum fraction that a taxonomic lineage needs to occur in at least one time series sample for that lineage to have an alluvial ribbon in the final plot.
+#' Lineages that occur below this threshold are grouped into an "other" category.
+#'
+#' @return A ggplot2 plot
+#' @export
+#'
+#' @importFrom rlang .data
+#'
+#' @examples
+plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01){
+  # check formatting of time_df -- is the first column named query_name, and does it contain all of the query_names that are in the taxonomy_annotate_df?
+  if(colnames(time_df) != c("query_name", "time")){
+    stop("The column names of time_df must be query_name and time. Please update the column names using colnames(time_df) <- c('query_name', 'time') and re-run.")
+  }
+
+  if(!all(unique(taxonomy_annotate_df$query_name) %in% time_df$query_name)){
+    stop("Not all query_name that are in taxonomy_annotate_df are in the query_name column of time_df. Please add the missing query_names and re-run")
+  }
+
+  # agglomerate to specified taxonomy level
+  if(!is.null(tax_glom_level)){
+    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, glom_var = "f_unique_to_query")
+  }
+
+  # join the tax df with the time df
+  taxonomy_annotate_df <- taxonomy_annotate_df %>%
+    dplyr::left_join(time_df, by = c("query_name" = "query_name"))
+
+  # determine which taxa to plot in their own alluvial ribbon.
+  keep_taxa <- taxonomy_annotate_df %>%
+    dplyr::filter(.data$f_unique_to_query > fraction_threshold)
+
+  # determine agglom cols
+  if(!is.null(tax_glom_level)){
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
+  } else {
+    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+    # check if there are NAs in the strain column and emit a warning, as these will be dropped and the plot will look weird
+    if(sum(is.na(taxonomy_annotate_df$strain)) > 0){
+      stop("Some lineages are missing strain information. This will lead to a very weird looking plot. Use tax_glom_level = 'species' or a higher taxonomic rank to produce a visualing rewarding plot")
+    }
+  }
+
+  grp_by_vector <- c("query_name", "time", "tax_glom_col")
+  alluvium_df <- taxonomy_annotate_df %>%
+    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+    # rename the column that will represent the alluvium ribbons to "tax_glom_col" so we can pass it to ggplot to as .data$
+    dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_to_query") %>%
+    dplyr::mutate(tax_glom_col = ifelse(lineage %in% keep_taxa$lineage, tax_glom_col, "other")) %>%
+    dplyr::select(-"lineage") %>%
+    # creating the "other" designation creates a variable that is duplicated.
+    # ggalluvium is not smart enough to sum over that variable itself a throws and error
+    # the following lines of code won't change the value of f_unique_to_query for anything other than "other"
+    dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
+    dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query))
+
+  alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
+                                                  y = .data$f_unique_to_query,
+                                                  alluvium = .data$tax_glom_col,
+                                                  label    = .data$tax_glom_col,
+                                                  fill     = .data$tax_glom_col)) +
+    ggalluvial::geom_alluvium(colour = "black", alpha = .4, decreasing = FALSE) +
+    ggplot2::labs(x = "Time", y = "Fraction of metagenome", colour = "", fill = tax_glom_level) +
+    ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
+    ggplot2::theme_classic() +
+    ggplot2::geom_text(stat = "alluvium", size = 2, decreasing = FALSE, min.y = 0.005)
+
+  return(alluvial_plt)
+}
