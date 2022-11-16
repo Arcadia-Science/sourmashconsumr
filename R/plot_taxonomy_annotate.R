@@ -44,6 +44,7 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.
 #' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level
+#' @param glom_var Character. One of "n_unique_kmers" or "f_unique_to_query".
 #'
 #' @return A data frame.
 #' @export
@@ -54,7 +55,7 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
 #' \dontrun{
 #' tax_glom_taxonomy_annotate()
 #' }
-tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL){
+tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL, glom_var = "n_unique_kmers"){
   # if tax_glom_level is not defined, return the taxonomy_annotate_df unchanged
   if(is.null(tax_glom_level)){
     message("tax_glom_level not defined, not doing any agglomeration. Returning input data frame unchanged.")
@@ -71,15 +72,28 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
-  taxonomy_annotate_df <- taxonomy_annotate_df %>%
-    dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
-    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-    dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
-    dplyr::ungroup() %>%
-    tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-    dplyr::select("lineage", "query_name", "n_unique_kmers")
-
+  if(glom_var == "n_unique_kmers"){
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
+      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
+      dplyr::ungroup() %>%
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "n_unique_kmers")
+  }
+  # at the moment, this was easier to hard code with an if statement.
+  # If I end up adding more glom vars, I'll figure out how to do this actually cleverly instead of copying and pasting the whole code chunk
+  if(glom_var == "f_unique_to_query"){
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "f_unique_to_query") %>%
+      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+      dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query)) %>%
+      dplyr::ungroup() %>%
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "f_unique_to_query")
+  }
   return(taxonomy_annotate_df)
 }
 
