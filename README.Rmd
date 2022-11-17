@@ -43,7 +43,6 @@ To access the functions in the sourmashconsumr package, you can load it with:
 
 ```{r example}
 library(sourmashconsumr)
-## basic example code
 ```
 
 The sourmashconsumr package contains a variety of functions to work with the outputs of the sourmash pythong package.

@@ -38,7 +38,6 @@ with:
 
 ``` r
 library(sourmashconsumr)
-## basic example code
 ```
 
 The sourmashconsumr package contains a variety of functions to work with
