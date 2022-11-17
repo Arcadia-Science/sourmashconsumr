@@ -87,10 +87,12 @@ use sourmash in your work, please cite: [Brown and Irber (2016),
 doi:10.21105/joss.00027.](https://joss.theoj.org/papers/10.21105/joss.00027)
 
 If you’d like more information on how sourmash works, please see the
-following publications: \* For a general background on how sourmash
-works and examples of how to use it: [Large-scale sequence comparisons
-with sourmash](https://f1000research.com/articles/8-1006/v1) \* For a
-mathematical description of FracMinHash and a demonstration of the
-accuracy of sourmash gather: [Lightweight compositional analysis of
-metagenomes with FracMinHash and minimum metagenome
-covers](https://www.biorxiv.org/content/10.1101/2022.01.11.475838v2.abstract)
+following publications:
+
+- For a general background on how sourmash works and examples of how to
+  use it: [Large-scale sequence comparisons with
+  sourmash](https://f1000research.com/articles/8-1006/v1)
+- For a mathematical description of FracMinHash and a demonstration of
+  the accuracy of sourmash gather: [Lightweight compositional analysis
+  of metagenomes with FracMinHash and minimum metagenome
+  covers](https://www.biorxiv.org/content/10.1101/2022.01.11.475838v2.abstract)
