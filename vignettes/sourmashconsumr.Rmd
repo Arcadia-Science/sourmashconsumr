@@ -4,6 +4,7 @@ date: November 2022
 output: 
   rmarkdown::html_vignette:
     toc: true
+    fig_width: 5
 vignette: >
   %\VignetteIndexEntry{Using sourmashconsumr to parse, analyze, and visualize the outputs of the sourmash pythong package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -102,6 +103,13 @@ data(gut_gather_df)
 data(gut_taxonomy_annotate_df)
 ```
 
+We've documented the content of each of these data sets, including an explanation for what is encoded by each column.
+Use the following code to access this information:
+
+``` r
+?gut_gather_df
+```
+
 ## Explanation about accessing external files packaged with sourmashconsumr
 
 Because some of the functions read external files, we've also included example sourmash outputs with the package to demonstrate how the `read*()` functions work.
@@ -174,11 +182,28 @@ print(fpaths)
 
 ### Visualizing shared k-mer content between samples with an upset plot
 
+The functions `from_signatures_to_upset_df()`, `plot_signatures_upset()` produce an upset plot that depicts the number of k-mers shared between sets of samples. 
+The absolute size of the intersection is the number of shared hashes (k-mers) in scaled FracMinHash sketches (see [How sourmash works] for an explanation of sketches and their content.).
 
-* signatures (output by `sourmash sketch` or `sourmash compute`): 
-    * `read_signature()`, show how to read multiple signatures using purrr,  
-    * upset plots: `from_signatures_to_upset_df()`, `plot_signatures_upset()`
- 
+An upset plot is an alternative to a venn diagram; the bottom half of the plot shows which samples have shared content while the top half of the plot shows the size of the intersection between the specified samples.
+
+This plot is good for visualizing the exact sequencing content overlap between samples. 
+If there is a lot of variation in the samples, it might be difficult to interpret the plot as there may be many intersections. 
+Still, it provides a nice complement to the sourmash compare results and plots as it gives more information about the nature of the intersections between samples.
+
+```{r}
+data(gut_signatures_df)
+
+gut_signatures_df <- gut_signatures_df %>%
+  dplyr::filter(ksize == 31)
+
+gut_signatures_upset_df <- from_signatures_to_upset_df(signatures_df = gut_signatures_df)
+head(gut_signatures_upset_df)
+```
+
+```{r, fig.width=8}
+plot_signatures_upset(gut_signatures_upset_df)
+```
 
 ### Assessing sample sequencing depth using rarefaction (accumulation) curves
 
