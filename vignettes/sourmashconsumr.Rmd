@@ -412,13 +412,15 @@ head(glom_df)
 ### Visualizing shared taxonomic lineages between samples with an upset plot
 
 ```{r}
-gut_taxonomy_upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df = gut_taxonomy_annotate_df)
+gut_taxonomy_upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                                                                    tax_glom_level = "phylum")
 
-head(gut_taxonomy_upset_inputs)
+head(gut_taxonomy_upset_inputs$upset_df)
 ```
 
-```{r}
-plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs, fill = NULL)
+```{r, fig.width=6, fig.height = 6}
+plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs, 
+                             fill = "phylum")
 ```
 
 ### Visualizing the taxonomy of a single sample with a sankey plot
