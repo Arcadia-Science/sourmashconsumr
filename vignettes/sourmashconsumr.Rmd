@@ -395,7 +395,7 @@ Taxonomic labels contextualize these results and allow new analyses like agglome
 data(gut_taxonomy_annotate_df)
 ```
 
-### Agglomerating up levels of taxnomy
+### Agglomerating up levels of taxonomy
 
 Inspired by `phyloseq::tax_glom()`, this method summarizes variables output by sourmash gather from genomes that have the same taxonomy at a user-specified taxonomy rank.
 Agglomeration occurs within each sample, meaning the variable is only summed within each query_name. 
@@ -413,27 +413,64 @@ head(glom_df)
 
 ```{r}
 gut_taxonomy_upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
-                                                                    tax_glom_level = "phylum")
-
-head(gut_taxonomy_upset_inputs$upset_df)
+                                                                    tax_glom_level = "order")
 ```
 
-```{r, fig.width=6, fig.height = 6}
+This function produces a list with three objects. 
+The first, `gut_taxonomy_upset_inputs$upset_df` is an upset-formatted data frame indicating the presense/absence of each lineage for each sample.
+The second, `gut_taxonomy_upset_inputs$taxonomy_annotate_df`, is a re-formatted data frame with the taxonomy annotation information.
+The third, `gut_taxonomy_upset_inputs$tax_glom_level`, records the taxonomy agglomeration level used to create the upset inputs.
+
+This list can then be fed into `plot_taxonomy_annotate_upset()` to produce an upset plot:
+
+```{r, fig.width=6, fig.height = 4}
 plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs, 
                              fill = "phylum")
 ```
 
-### Visualizing the taxonomy of a single sample with a sankey plot
+If fill is specified, the bar plot on the upper portion of the barplot will be colored by the taxonomic level indicated.
+The level must be at or above that used in `from_taxonomy_annotate_to_upset_inputs()`.
+
+Since upset plots are based on the presence or absence of lineages, the counts in the upset barplot do not reflect the total number of lineages observed at a given taxonomic level, but rather how many lineages are shared between samples at that level -- e.g., the numbers are not weighted.
+
+### Visualizing taxonomy with a sankey plot
+
+One sample
+```{r, fig.width = 8, fig.height = 5}
+plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df %>%
+                                dplyr::filter(query_name == "SRR5935765"), 
+                              tax_glom_level = "family")
+```
+
+All samples
+```{r, fig.width = 8, fig.height = 5}
+plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                              tax_glom_level = "order")
+```
+
+
 ### Visualizing taxonomic changes over time with a time series alluvial plot
 ### Converting from taxonomy annotate to phyloseq object
+
+```{r}
+gut_phyloseq<- from_taxonomy_annotate_to_phyloseq(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                                                  metadata_df = metadata %>%
+                                                    tibble::column_to_rownames("run_accessions"))
+gut_phyloseq
+```
+
 ### Converting from taxonomy annotate to a metacoder object
 
+```{r}
+from_taxonomy_annotate_to_metacoder(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                                    intersect_bp_threshold = 50000, 
+                                    tax_glom_level = "order",
+                                    groups = metadata)
+```
 
 
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
-    * taxonomy agglomeration: `tax_glom_taxonomy_annotate()`
-    * sankey plot:  `plot_taxonomy_annotate_sankey()`
     * time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
     * to metacoder: `from_taxonomy_annotate_to_metacoder()`
     * to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
