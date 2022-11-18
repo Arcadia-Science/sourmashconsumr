@@ -1,6 +1,6 @@
 #' Gut microbiome sourmash compare data frame
 #'
-#' A similarlity matrix between six stool microbiome shotgun metagenome samples.
+#' A similarity matrix between six stool microbiome shotgun metagenome samples.
 #'
 #' @format ## `gut_compare_df`
 #' A data frame with 6 rows and 7 columns:
