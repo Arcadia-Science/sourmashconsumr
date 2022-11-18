@@ -188,17 +188,25 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
       tibble::rownames_to_column("lineage") %>%
       dplyr::left_join(taxonomy_annotate_df, by = "lineage") %>%
       tibble::column_to_rownames("lineage")
+
+    # plot the upset plot
+    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
+                               base_annotations=list(
+                                 '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                                                              text_colors=c(on_background='black', on_bar='black'),
+                                                                              mapping=ggplot2::aes(fill = .data$fill)) +
+                                   ggplot2::scale_fill_brewer(palette = "Set2") +
+                                   ggplot2::labs(fill = fill))
+    )
+    return(plt)
   }
 
   # plot the upset plot
   plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                                                            text_colors=c(on_background='black', on_bar='black'),
-                                                                            mapping=ggplot2::aes(fill = .data$fill)) +
-                                 ggplot2::scale_fill_brewer(palette = "Set2") +
-                                 ggplot2::labs(fill = fill))
-  )
+                                                                            text_colors=c(on_background='black', on_bar='black'))
+  ))
   return(plt)
 }
 
