@@ -149,6 +149,9 @@ You can see the complete set of commands that were used to generate the data [he
 
 # Complete start
 
+## Reading sourmash outputs into R
+
+
 ## Working with sourmash signatures (FracMinHash sketches)
 
 Sourmash signatures are compressed representations of sequencing data.
@@ -221,6 +224,11 @@ Further, these curves may be more accurate if you build them with sequences from
 In case signatures were built from reads that have not been k-mer trimmed, there is a filtering step that removes minhashes that are only observed in one sample at abundance 1 as these are likely sequencing errors. 
 Please note that this filtering process may invalidate downstream rarefaction curve convergence estimation as many of these methods evaluate singletons and doubletons in the data set.
 
+The function `from_signatures_to_rarefaction_df()` may take a while to run. 
+We've found it produces fairly consistent results even when signatures are dramatically downsampled with a high scaled value (e.g. `scaled = 100000).
+You can downsample your signatures with sourmash prior to reading them into R using the function `sourmash sig downsample`. 
+See the [sourmash documentation](https://sourmash.readthedocs.io) for more details. 
+
 ```{r signature_rarefaction}
 data(gut_signatures_df)
 
@@ -271,12 +279,84 @@ plot_signatures_rarefaction(rarefaction_df = rarefaction_df, fraction_of_points_
 
 ## Working with the CSV output of sourmash compare
 
-* sourmash compare csv: 
-    * `read_compare()`
-    *  MDS plot: `make_compare_mds()`, `plot_compare_mds()`
-    * heatmap: `plot_compare_heatmap()`
+Sourmash compare outputs an all-by-all similarity matrix for a group of samples. 
+When the samples were sketched with abundance tracking as was done here (e.g. the abundance of each k-mer was recorded), the similarity matrix encodes the angular distance.
+The sourmashconsumr package supports two visualizations from the CSV output of sourmash compare, an MDS (ordination) plot and a clustered heat map. 
+
+### MDS plot from sourmash compare output
+
+```{r}
+fpath <- system.file("extdata", "gut_compare.csv.gz", package = "sourmashconsumr")
+gut_compare_df <- read_compare_csv(fpath)
+gut_compare_df
+```
+
+The MDS plot allows you to visualize how similar each sample is to every other sample in two dimensional space. 
+Samples that cluster more closely together are most similar.
+
+```{r}
+gut_compare_mds_df <- make_compare_mds(gut_compare_df)
+head(gut_compare_mds_df)
+```
+
+```{r}
+compare_plt <- plot_compare_mds(gut_compare_mds_df)
+compare_plt
+```
+
+The MDS plot is a ggplot2 object, so you can modify it by adding layers.
+
+```{r}
+compare_plt +
+  ggplot2::theme_minimal()
+```
+
+You can also add metadata directly to the data frame output by `make_compare_mds` so that you can add it to a plot:
+
+```{r}
+gut_compare_mds_df %>%
+  dplyr::left_join(metadata, by = c("sample" = "run_accessions"))
+
+plot_compare_mds(gut_compare_mds_df) +
+  ggplot2::geom_point(ggplot2::aes(color = groups))
+
+```
+
+### Heatmap from sourmash compare output
+
+The `plot_compare_heatmap` object works directly on the output of `read_compare_csv()`.
+It's a wrapper function for `base::heatmap()`, so you can add any arguments accepted by `base::heatmap()` to modify the look of the plot.
+
+```{r, fig.height=5, fig.width=6}
+plot_compare_heatmap(gut_compare_df, cexRow = 0.75, cexCol = 0.75)
+```
     
 ## Working with the CSV output of sourmash gather
+
+Sourmash gather compares a query (here, a metagenome) against a database (here, GTDB representatives) and provides the minimum set of genomes the cover all of the k-mers in the query that are in the database.
+
+Sourmash gather works best for metagenomes from environments that have been sequenced before or from which many genomes have been isolated and sequenced. 
+Because k-mers are so specific, a genome needs to be in a database for sourmash gather to find a match. 
+Sourmash gather won't find much above species (k = 31) or genus (k = 21) similarity, so if most of the organisms in a sample are new, sourmash won't be able to label them.
+
+Sourmashconsumr produces two plots from the sourmash gather results: a high-level bargraph summarizes the fraction of the sample that had matches in the database, and an upset plot showing intersections between genomes that were matched in multiple samples.
+These plots are designed to visualize the output of running sourmash gather on many samples in the same plot.
+
+```{r}
+data(gut_gather_df)
+
+plot_gather_classified(gather_df = gut_gather_df)
+```
+
+The actual number that is plotted is referred to as abundance-weighted unique fraction. By default, sourmash gather returns the following information:
+
+    intersect_bp: the estimated number of base pairs that overlapped between the query and the matched genome
+    f_orig_query: the fraction of the orginal query (metagenome sample) that matched against the genome
+    f_match: the fraction of the genome in the database that matched against the original query (metagenome sample)
+    f_unique_to_query: the fraction of the matched genome that was unique to the query. Given that multiple matched genomes could cover the same portion of the query, this column reports the fraction of the query that was covered by the a matched genome, but doesn't allow multiple genomes to cover the same portion. As such, the genome that covers the most k-mers in a metagenome sample gets to "anchor" those k-mers, while other genomes that could cover those k-mers don't get any of them. This column removes the double counting problem that arises from having multiple genomes in a database that contain some of the same sequences.
+    f_unique_weighted: This column weights the f_unique_to_query by the abundance of those k-mers. This is important in the context of a metagenome, as the abundance reflects the abundance of the genome in the original microbial communit.
+
+The plots below use f_unique_weighted to look at the taxonomic composition of each metagenome sample.
 
 * sourmash gather csv
     * `read_gather()`
@@ -284,6 +364,9 @@ plot_signatures_rarefaction(rarefaction_df = rarefaction_df, fraction_of_points_
     * upset plot: `from_gather_to_upset_df()`, `plot_gather_upset()`
     
 ## Working with the CSV output of sourmash taxonomy annotate
+
+Sourmash taxonomy makes the sourmash gather output more interpretable. Previously, sourmash gather only output the statistics about the genomes in a database that were found in a metagenome.
+While this information is useful, taxonomic labels allow agglomeration up the taxonomic lineage to summarize results.
 
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
