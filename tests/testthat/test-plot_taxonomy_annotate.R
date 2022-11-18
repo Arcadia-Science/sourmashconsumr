@@ -59,6 +59,11 @@ test_that("plot_taxonomy_annotate_upset returns a plot", {
   upset_inputs <- from_taxonomy_annotate_to_upset_inputs(tax_annot_df1, "class")
   plt <- plot_taxonomy_annotate_upset(upset_inputs, fill = "phylum")
   expect_equal(class(plt)[[3]], "ggplot")
+  # check that it still returns a plot when no tax glom was performed initially
+  upset_inputs2 <- from_taxonomy_annotate_to_upset_inputs(tax_annot_df1)
+  plt2 <- plot_taxonomy_annotate_upset(upset_inputs2, fill = NULL)
+  expect_equal(class(plt2)[[3]], "ggplot")
+
 })
 
 # sankey plot -------------------------------------------------------------
