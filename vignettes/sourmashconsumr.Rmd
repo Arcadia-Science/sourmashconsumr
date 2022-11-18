@@ -1,0 +1,98 @@
+---
+title: "Using sourmashconsumr to parse, analyze, and visualize the outputs of the sourmash pythong package"
+date: November 2022
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Using sourmashconsumr to parse, analyze, and visualize the outputs of the sourmash pythong package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sourmashconsumr)
+```
+
+```{r, eval = F}
+# remove me!
+# build with:
+# devtools::build_rmd()
+```
+
+## Introduction
+
+[Sourmash](https://sourmash.readthedocs.io/en/latest/) is a tool that facilitates lightweight and rapid comparisons between potentially very large sets of sequencing data (see [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6720031/) and [here](https://www.biorxiv.org/content/10.1101/2022.01.11.475838v2.abstract)).
+Sourmash uses FracMinHash sketching to generate compressed representations of sequencing data.
+Two core parameters determine which sequences are represented in these sketches: k-mers size and scaled value.
+The k-mer size dictates the length of sequences represented in the sketch; defaults are *k* = 21, *k* = 31, and *k* = 51.
+While these sizes are somewhat empiric, overlap between related genomic sequences for a given k-mer size roughly approximates taxonomic relationships, with substantial overlap at *k* = 21 roughly approximating genus-level relatedness, *k* = 31 species-level, and *k* = 51 strain-level.
+The scaled value dictates the fraction of k-mers in the original sequence that get included in the sketch.
+Approximately 1/scaled value of k-mers in the original sequence get included in the sketch.
+The sourmash defaults are 1000, 2000, and 10,000.
+The scaled value takes advantage of the fact that a subset of data can be used to accurately estimate things like similarity and containment and dramatically sub-samples the original sequences thus facilitating rapid comparisons even between very large data sets.
+
+The sourmashconsumr package works with outputs from the following sourmash commands.
+We provide a brief description of each command, but be sure to check the [sourmash documentation](https://sourmash.readthedocs.io/en/latest/) for a more complete explanation and examples.
+
++ `sourmash sketch`: Produces sketches for each sequence. Any sequencing data (DNA, protein, or 6-frame translation) in FASTQ or FASTA format can be sketched. Files produced by `sourmash sketch` are referred to as *signatures* because they may contain many sketches (one sketch for each k-mer size).
++ `sourmash compare`: Compares many sketches and produces a (dis)similarity matrix. If abundance information is ignored, the output represents jaccard distance. If abundance information is included, the output represents angular distance.
++ `sourmash gather`: Compares each query sketch against all sketches in a database to identify the minimum set of sketches that contain all of the known k-mers in the query. Typically, `sourmash gather` is run on metagenomes to determine all of the genomes that are contained within the sample, however `sourmash gather` can be used to assess containment between a query and a large database of sequences (e.g. for contamination discovery).
++ `sourmash taxonomy annotate`: Assigns taxonomic lineages to the sourmash gather matches.
+
+Each of these outputs is a text file (either CSV or JSON). 
+All of these files are information rich.
+The functions in this package are designed to help interpret these outputs.
+
+## Working with sourmash signatures (FracMinHash sketches)
+
+* signatures (output by `sourmash sketch` or `sourmash compute`): 
+    * `read_signature()`, show how to read multiple signatures using purrr,  
+    * upset plots: `from_signatures_to_upset_df()`, `plot_signatures_upset()`
+    * rarefaction plots for signatures sketched from reads: `from_signatures_to_rarefaction_df()`, `plot_signatures_rarefaction()` 
+    
+## Working with the CSV output of sourmash compare
+
+* sourmash compare csv: 
+    * `read_compare()`
+    *  MDS plot: `make_compare_mds()`, `plot_compare_mds()`
+    * heatmap: `plot_compare_heatmap()`
+    
+## Working with the CSV output of sourmash gather
+
+* sourmash gather csv
+    * `read_gather()`
+    * barchart: `plot_gather_classified()`
+    * upset plot: `from_gather_to_upset_df()`, `plot_gather_upset()`
+    
+## Working with the CSV output of sourmash taxonomy annotate
+
+* sourmash taxonomy annotate csv
+    * `read_taxonomy_annotate()`
+    * taxonomy agglomeration: `tax_glom_taxonomy_annotate()`
+    * upset plot: `from_taxonomy_annotate_to_upset_inputs()`, `plot_taxonomy_annotate_upset()`
+    * sankey plot:  `plot_taxonomy_annotate_sankey()`
+    * time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
+    * to metacoder: `from_taxonomy_annotate_to_metacoder()`
+    * to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
+     
+## Upset utility functions
+
+The sourmashconsumr package includes utility functions to create and work with upset-formatted data frames.
+These data frames record the presence-absence of the value that is intersected between many samples
+
+* upset utilities
+    * `from_list_to_upset_df()`
+    * `from_upset_df_to_intersection_members()`
+    * `from_upset_df_to_intersection_summary()`
+    * `from_upset_df_to_intersections()`
+    
+SHOW THE HEAD OF AN UPSET DATAFRAME TO CONTEXTUALIZE THE FORMAT.
+
