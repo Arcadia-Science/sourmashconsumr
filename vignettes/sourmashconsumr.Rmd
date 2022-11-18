@@ -372,13 +372,22 @@ head(gut_gather_upset_df)
 ```
 
 ```{r, fig.width = 8}
-plot_gather_upset(gut_gather_upset_df)
+plot_gather_upset(upset_df = gut_gather_upset_df)
+```
+
+The bars in the upset plot can optionally be colored by the database the match came from.
+This is useful when you use many databases when running sourmash gather.
+Since we only used one database to classify our samples in the example data, the visualization isn't much more rewarding.
+
+```{r, fig.width = 11}
+plot_gather_upset(upset_df = gut_gather_upset_df, color_by_database = T, gather_df = gut_gather_df)
 ```
 
 ## Working with the CSV output of sourmash taxonomy annotate
 
-Sourmash taxonomy makes the sourmash gather output more interpretable. Previously, sourmash gather only output the statistics about the genomes in a database that were found in a metagenome.
-While this information is useful, taxonomic labels allow agglomeration up the taxonomic lineage to summarize results.
+Sourmash taxonomy makes the sourmash gather output more interpretable. 
+Sourmash gather only outputs the statistics about the samples in a database that were found in a query sample.
+Taxonomic labels contextualize these results and allow new analyses like agglomeration up the taxonomic lineage to summarize results or visualizing results in the context of taxonomy.
 
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
