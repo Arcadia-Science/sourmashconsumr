@@ -111,10 +111,19 @@ from_taxonomy_annotate_to_metacoder <- function(taxonomy_annotate_df = NULL,
   if(is.null(groups)){
     groups <- paste0(groups_prefix, colnames(metacoder_obj$data$tax_data)[4:ncol(metacoder_obj$data$tax_data)])
   } else {
-    # if user defined a groups dataframe, make sure it's in the same order as samples in the metacoder object
-    groups <- groups[order(match(groups[[1]], colnames(metacoder_obj$data$tax_data)[4:ncol(metacoder_obj$data$tax_data)])), ]
-    # double check that the groups match with the samples as ordered in the metacoder object
-    stopifnot(all.equal(groups[[1]], colnames(metacoder_obj$data$tax_data)[4:ncol(metacoder_obj$data$tax_data)]))
+    if(!is.null(tax_glom_level)){
+      # when tax_glom_level is defined, there are only two metadata columns before the query name columns
+      # if user defined a groups dataframe, make sure it's in the same order as samples in the metacoder object
+      groups <- groups[order(match(groups[[1]], colnames(metacoder_obj$data$tax_data)[3:ncol(metacoder_obj$data$tax_data)])), ]
+      # double check that the groups match with the samples as ordered in the metacoder object
+      stopifnot(all.equal(groups[[1]], colnames(metacoder_obj$data$tax_data)[3:ncol(metacoder_obj$data$tax_data)]))
+    } else {
+      # when tax_glom_level is not defined, there are three metadata columns before the query name columns
+      # if user defined a groups dataframe, make sure it's in the same order as samples in the metacoder object
+      groups <- groups[order(match(groups[[1]], colnames(metacoder_obj$data$tax_data)[4:ncol(metacoder_obj$data$tax_data)])), ]
+      # double check that the groups match with the samples as ordered in the metacoder object
+      stopifnot(all.equal(groups[[1]], colnames(metacoder_obj$data$tax_data)[4:ncol(metacoder_obj$data$tax_data)]))
+    }
   }
 
   metacoder_obj$data$tax_occ <- metacoder::calc_n_samples(metacoder_obj, "tax_abund",

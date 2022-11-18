@@ -10,6 +10,11 @@ test_that("test that user can specify groups with a data frame", {
   expect_message(from_taxonomy_annotate_to_metacoder(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"),
                                                      groups = groups_df),
                  regexp = "Calculating number of samples with a value greater than 0 for 6 columns in 2 groups for 701 observations")
+  expect_message(from_taxonomy_annotate_to_metacoder(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"),
+                                                     groups = groups_df,
+                                                     tax_glom_level = "order"),
+                 regexp = "Calculating number of samples with a value greater than 0 for 6 columns in 2 groups for 43 observations")
+
 })
 
 test_that("test that to metacoder works with genbank database", {
