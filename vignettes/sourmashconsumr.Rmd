@@ -450,6 +450,22 @@ plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df,
 
 
 ### Visualizing taxonomic changes over time with a time series alluvial plot
+
+In this case, our samples aren't actually time series, so this plot doesn't really make sense.
+However, for demonstration purposes, we'll use our test data anyway to show how this plot would work if we were working with time series.
+
+```{r, fig.width= 7, fig.height= 6}
+time_df <- data.frame(query_name = metadata$run_accessions,
+                      time = c(1, 2, 3, 4, 5, 6))
+
+plot_taxonomy_annotate_ts_alluvial(taxonomy_annotate_df = gut_taxonomy_annotate_df,
+                                  time_df = time_df, 
+                                  tax_glom_level = "family",
+                                  fraction_threshold = 0.01)
+```
+
+Eventually, we'll update the vignette to show what this looks like with real time series data.
+
 ### Converting from taxonomy annotate to phyloseq object
 
 ```{r}
@@ -461,19 +477,33 @@ gut_phyloseq
 
 ### Converting from taxonomy annotate to a metacoder object
 
+[Metacoder](https://grunwaldlab.github.io/metacoder_documentation/) is an R package for visualizing heat trees from taxonomic data.
+The sourmashconsumr package provides a function, `from_taxonomy_to_metacoder()`, to convert the output of sourmash taxonomy annotate to a metacoder object.
+
 ```{r}
-from_taxonomy_annotate_to_metacoder(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
-                                    intersect_bp_threshold = 50000, 
-                                    tax_glom_level = "order",
-                                    groups = metadata)
+gut_metacoder <- from_taxonomy_annotate_to_metacoder(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                                                     intersect_bp_threshold = 50000, 
+                                                     tax_glom_level = "order",
+                                                     groups = metadata)
 ```
+
+This object can then be used to with the built-in metacoder visualizations like `heattree()`:
+
+```{r}
+# generate a heat_tree plot with taxa from all samples, agglomerated to the order level
+set.seed(1) # This makes the plot appear the same each time it is run 
+metacoder::heat_tree(gut_metacoder, 
+                     node_label = taxon_names,
+                     node_size = n_obs,
+                     node_size_axis_label = "k-mer abundance",
+                     layout = "davidson-harel", # The primary layout algorithm
+                     initial_layout = "reingold-tilford") # Node location algorithm 
+```
+
 
 
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
-    * time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
-    * to metacoder: `from_taxonomy_annotate_to_metacoder()`
-    * to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
      
 ## Upset utility functions
 
