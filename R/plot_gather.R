@@ -35,7 +35,7 @@ plot_gather_classified <- function(gather_df) {
     dplyr::bind_rows(gather_df_unclassified)
 
   ggplot2::ggplot(gather_df,
-                  ggplot2::aes(x = "query_name", y = "f_unique_weighted", fill = "database")) +
+                  ggplot2::aes(x = .data$query_name, y = .data$f_unique_weighted, fill = .data$database)) +
     ggplot2::geom_col() +
     ggplot2::theme_classic() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90)) +
