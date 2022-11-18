@@ -157,7 +157,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' The bar chart that displays the intersection size between samples can optionally be colored by taxonomy lineage (e.g. phylum).
 #'
 #' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
-#' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Uses the Set2 palette so cannot visualize more than 8 levels.
+#' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.
 #'
 #' @return A ComplexUpset plot
 #' @export
