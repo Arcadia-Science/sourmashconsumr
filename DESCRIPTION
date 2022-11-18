@@ -9,6 +9,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
+    knitr,
+    rmarkdown,
     stringr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -35,3 +37,4 @@ Imports:
     vegan
 Depends: 
     R (>= 2.10)
+VignetteBuilder: knitr
