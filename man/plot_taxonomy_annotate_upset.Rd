@@ -9,7 +9,7 @@ plot_taxonomy_annotate_upset(upset_inputs, fill = NULL)
 \arguments{
 \item{upset_inputs}{List of inputs produced by from_taxonomy_annotate_to_upset_inputs().}
 
-\item{fill}{Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Uses the Set2 palette so cannot visualize more than 8 levels.}
+\item{fill}{Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.}
 }
 \value{
 A ComplexUpset plot
