@@ -109,7 +109,7 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
   if(color_by_database == F){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
-                                     '# scaled k-mers' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                     '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                        text_colors=c(on_background='black', on_bar='black'),
                                                                                        mapping=ggplot2::aes(fill='bars_color')) +
                                        ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none'))
@@ -146,7 +146,7 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
 
     upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
                                      base_annotations = list(
-                                       '# lineages' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                       '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                       text_colors=c(on_background='black', on_bar='black'),
                                                                                       mapping=ggplot2::aes(fill = .data$database)) +
                                          ggplot2::scale_fill_brewer(palette = "Set2"))
