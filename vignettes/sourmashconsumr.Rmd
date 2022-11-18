@@ -342,27 +342,39 @@ Sourmash gather won't find much above species (k = 31) or genus (k = 21) similar
 Sourmashconsumr produces two plots from the sourmash gather results: a high-level bargraph summarizes the fraction of the sample that had matches in the database, and an upset plot showing intersections between genomes that were matched in multiple samples.
 These plots are designed to visualize the output of running sourmash gather on many samples in the same plot.
 
+### Fraction classifed plot from sourmash gather output
+
+The actual number that is plotted is referred to as abundance-weighted unique fraction. By default, sourmash gather returns the following information:
+
++ `intersect_bp`: the estimated number of base pairs that overlapped between the query and the matched genome
++ `f_orig_query`: the fraction of the original query (metagenome sample) that matched against the genome
++ `f_match`: the fraction of the genome in the database that matched against the original query (metagenome sample)
++ `f_unique_to_query`: the fraction of the matched genome that was unique to the query. Given that multiple matched genomes could cover the same portion of the query, this column reports the fraction of the query that was covered by the a matched genome, but doesn't allow multiple genomes to cover the same portion. As such, the genome that covers the most k-mers in a metagenome sample gets to "anchor" those k-mers, while other genomes that could cover those k-mers don't get any of them. This column removes the double counting problem that arises from having multiple genomes in a database that contain some of the same sequences.
++ `f_unique_weighted`: This column weights the f_unique_to_query by the abundance of those k-mers. This is important in the context of a metagenome, as the abundance reflects the abundance of the genome in the original microbial community.
+
+The plots below use f_unique_weighted to look at the taxonomic composition of each metagenome sample.
+
 ```{r}
 data(gut_gather_df)
 
 plot_gather_classified(gather_df = gut_gather_df)
 ```
 
-The actual number that is plotted is referred to as abundance-weighted unique fraction. By default, sourmash gather returns the following information:
+### Upset plot from sourmash gather output
 
-    intersect_bp: the estimated number of base pairs that overlapped between the query and the matched genome
-    f_orig_query: the fraction of the orginal query (metagenome sample) that matched against the genome
-    f_match: the fraction of the genome in the database that matched against the original query (metagenome sample)
-    f_unique_to_query: the fraction of the matched genome that was unique to the query. Given that multiple matched genomes could cover the same portion of the query, this column reports the fraction of the query that was covered by the a matched genome, but doesn't allow multiple genomes to cover the same portion. As such, the genome that covers the most k-mers in a metagenome sample gets to "anchor" those k-mers, while other genomes that could cover those k-mers don't get any of them. This column removes the double counting problem that arises from having multiple genomes in a database that contain some of the same sequences.
-    f_unique_weighted: This column weights the f_unique_to_query by the abundance of those k-mers. This is important in the context of a metagenome, as the abundance reflects the abundance of the genome in the original microbial communit.
+An upset plot is an alternative to a venn diagram; the bottom half of the plot shows which samples have shared content while the top half of the plot shows the size of the intersection between the specified samples.
 
-The plots below use f_unique_weighted to look at the taxonomic composition of each metagenome sample.
+This upset plot visualizes the intersection of genomes that were identified in different samples. 
 
-* sourmash gather csv
-    * `read_gather()`
-    * barchart: `plot_gather_classified()`
-    * upset plot: `from_gather_to_upset_df()`, `plot_gather_upset()`
-    
+```{r}
+gut_gather_upset_df <- from_gather_to_upset_df(gather_df = gut_gather_df)
+head(gut_gather_upset_df)
+```
+
+```{r, fig.width = 8}
+plot_gather_upset(gut_gather_upset_df)
+```
+
 ## Working with the CSV output of sourmash taxonomy annotate
 
 Sourmash taxonomy makes the sourmash gather output more interpretable. Previously, sourmash gather only output the statistics about the genomes in a database that were found in a metagenome.
