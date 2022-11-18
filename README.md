@@ -26,7 +26,8 @@ devtools::install_github("Arcadia-Science/sourmashconsumr")
 ```
 
 Eventually, we hope to release sourmashconsumr on CRAN and to provide a
-bioconda package. We’ll update these instructions once we’ve done that.
+conda-forge package. We’ll update these instructions once we’ve done
+that.
 
 ## Usage
 
