@@ -389,10 +389,48 @@ Sourmash taxonomy makes the sourmash gather output more interpretable.
 Sourmash gather only outputs the statistics about the samples in a database that were found in a query sample.
 Taxonomic labels contextualize these results and allow new analyses like agglomeration up the taxonomic lineage to summarize results or visualizing results in the context of taxonomy.
 
+### Reading sourmash taxonomy annotate outputs into R
+
+```{r}
+data(gut_taxonomy_annotate_df)
+```
+
+### Agglomerating up levels of taxnomy
+
+Inspired by `phyloseq::tax_glom()`, this method summarizes variables output by sourmash gather from genomes that have the same taxonomy at a user-specified taxonomy rank.
+Agglomeration occurs within each sample, meaning the variable is only summed within each query_name. 
+This function returns a data frame with the columns 'lineage', 'query_name', and the variable that is specified by `glom_var`.
+
+```{r}
+glom_df <-  tax_glom_taxonomy_annotate(taxonomy_annotate_df = gut_taxonomy_annotate_df,
+                                       tax_glom_level = "genus",
+                                       glom_var = "f_unique_to_query")
+
+head(glom_df)
+```
+
+### Visualizing shared taxonomic lineages between samples with an upset plot
+
+```{r}
+gut_taxonomy_upset_inputs <- from_taxonomy_annotate_to_upset_inputs(taxonomy_annotate_df = gut_taxonomy_annotate_df)
+
+head(gut_taxonomy_upset_inputs)
+```
+
+```{r}
+plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs, fill = NULL)
+```
+
+### Visualizing the taxonomy of a single sample with a sankey plot
+### Visualizing taxonomic changes over time with a time series alluvial plot
+### Converting from taxonomy annotate to phyloseq object
+### Converting from taxonomy annotate to a metacoder object
+
+
+
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
     * taxonomy agglomeration: `tax_glom_taxonomy_annotate()`
-    * upset plot: `from_taxonomy_annotate_to_upset_inputs()`, `plot_taxonomy_annotate_upset()`
     * sankey plot:  `plot_taxonomy_annotate_sankey()`
     * time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
     * to metacoder: `from_taxonomy_annotate_to_metacoder()`
