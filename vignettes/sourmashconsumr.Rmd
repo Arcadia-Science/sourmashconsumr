@@ -27,7 +27,7 @@ library(sourmashconsumr)
 # devtools::build_rmd("vignettes/sourmashconsumr.Rmd")
 ```
 
-## Introduction
+# Introduction
 
 [Sourmash](https://sourmash.readthedocs.io/en/latest/) is a tool that facilitates lightweight and rapid comparisons between potentially very large sets of sequencing data (see [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6720031/) and [here](https://www.biorxiv.org/content/10.1101/2022.01.11.475838v2.abstract)).
 
@@ -37,7 +37,7 @@ The sourmashconsumr functions are designed to help interpret these outputs.
 
 sourmashconsumr does not re-implement any of the functionality in the sourmash python package. 
 
-### How sourmash works
+## How sourmash works
 
 Sourmash uses FracMinHash sketching to generate compressed representations of sequencing data.
 Two core parameters determine which sequences are represented in these sketches: k-mers size and scaled value.
@@ -48,7 +48,7 @@ Approximately 1/scaled value of k-mers in the original sequence get included in 
 The sourmash defaults are 1000, 2000, and 10,000.
 The scaled value takes advantage of the fact that a subset of data can be used to accurately estimate things like similarity and containment and dramatically sub-samples the original sequences thus facilitating rapid comparisons even between very large data sets.
 
-### Sourmash outputs that sourmashconsumr works on
+## Sourmash outputs that sourmashconsumr works on
 
 The sourmashconsumr package works with outputs from the following sourmash commands.
 We provide a brief description of each command, but be sure to check the [sourmash documentation](https://sourmash.readthedocs.io/en/latest/) for a more complete explanation and examples.
@@ -58,7 +58,7 @@ We provide a brief description of each command, but be sure to check the [sourma
 + `sourmash gather`: Compares each query sketch against all sketches in a database to identify the minimum set of sketches that contain all of the known k-mers in the query. Typically, `sourmash gather` is run on metagenomes to determine all of the genomes that are contained within the sample, however `sourmash gather` can be used to assess containment between a query and a large database of sequences (e.g. for contamination discovery).
 + `sourmash taxonomy annotate`: Assigns taxonomic lineages to the sourmash gather matches.
 
-## Installation
+# Installation
 
 You can install the development version of sourmashconsumr from [GitHub](https://github.com/) with:
 
@@ -76,14 +76,14 @@ To access the functions in the sourmashconsumr package:
 library(sourmashconsumr)
 ```
 
-## Quickstart 
+# Quickstart 
 
-## Problems & getting help
+# Problems & getting help
 
 If you encounter any problems using sourmashconsumr, please post an issue on the issue tracker: https://github.com/Arcadia-Science/sourmashconsumr/issues.
 If you encounter problems with sourmash, please post an issue on the sourmash issue tracker: https://github.com/sourmash-bio/sourmash/issues.
 
-## Notes about the example data and package file paths
+# Notes about the example data and package file paths
 
 The sourmashconsumr package comes with a few example data sets that you can load to get a feel for data formats and to play around with the functions in the package.
 
@@ -102,7 +102,7 @@ data(gut_gather_df)
 data(gut_taxonomy_annotate_df)
 ```
 
-### Explanation about accessing external files packaged with sourmashconsumr
+## Explanation about accessing external files packaged with sourmashconsumr
 
 Because some of the functions read external files, we've also included example sourmash outputs with the package to demonstrate how the `read*()` functions work.
 Specifying paths to data files packaged with an R package is a bit ugly...it takes advantage of the base R function `system.file` and information about the package to derive the file paths.
@@ -121,7 +121,7 @@ signature_df <- read_signature(fpath)
 signature_df <- read_signature("path/to/your_signature_file.sig")
 ```
 
-### Origins of the example data
+## Origins of the example data
 
 The example data are six samples from the [iHMP IBD](https://ibdmdb.org/) cohort. 
 These are short shotgun metagenomes from stool microbiomes. 
@@ -139,14 +139,14 @@ All individuals were symptomatic at time point 1, but three individuals were dia
 
 You can see the complete set of commands that were used to generate the data [here](ADD LINK ONCE PR IS MERGED).
 
-## Complete start
+# Complete start
 
-### Working with sourmash signatures (FracMinHash sketches)
+## Working with sourmash signatures (FracMinHash sketches)
 
 Sourmash signatures are compressed representations of sequencing data.
 This data can be used for many different purposes such as [machine learning](https://www.biorxiv.org/content/10.1101/2022.06.30.498290v1), differential k-mer abundance analysis, and sequencing depth/rarefaction analysis.
 
-#### Reading sourmash sigatures into R
+### Reading sourmash sigatures into R
 
 To facilitate these types of analyses in R, the sourmashconsumr function `read_signature()` reads sourmash signatures produced by the `sourmash sketch` or `sourmash compute` function into a data frame.
 
@@ -164,15 +164,15 @@ library(purrr)
 # grab the files paths for sourmashconsumr example data
 fpaths <- system.file("extdata", package = "sourmashconsumr") %>% list.files()
 fpaths <- fpaths[grepl(pattern = ".sig.gz", x = fpaths)]
-
+print(fpaths)
 # read in the signature files
-signature_df <- fpaths %>%
-  map_dfr(read_signature)
+#signature_df <- fpaths %>%
+#  map_dfr(read_signature)
 
-head(signature_df)
+#head(signature_df)
 ```
 
-#### Visualizing shared k-mer content between samples with an upset plot
+### Visualizing shared k-mer content between samples with an upset plot
 
 
 * signatures (output by `sourmash sketch` or `sourmash compute`): 
@@ -180,26 +180,83 @@ head(signature_df)
     * upset plots: `from_signatures_to_upset_df()`, `plot_signatures_upset()`
  
 
-#### Assessing sample sequencing depth using rarefaction curves
+### Assessing sample sequencing depth using rarefaction (accumulation) curves
 
-It only makes sense to generate rarefaction curves from 
-    * rarefaction plots for signatures sketched from reads: `from_signatures_to_rarefaction_df()`, `plot_signatures_rarefaction()`
+This is beta functionality that has not been systematically validated.
+The functions are well-written and should run, but we encourage you to interpret their output critically and with the context of your domain-specific knowledge.
+Feel free to reach out on the [issue tracker](https://github.com/Arcadia-Science/sourmashconsumr/issues) if you have questions. 
 
-### Working with the CSV output of sourmash compare
+The goal of the `from_signatures_to_rarefaction_df()` and `plot_signatures_rarefaction()` functions is to produce a rarefaction curve to assess whether an adequate sequencing depth was reached to capture the complexity of the sample sequenced.
+These functions should work on raw or trimmed reads from short or long read sequencing data generated from metagenomes, metatranscriptomes, genomes, transcriptomes, and maybe other types.
+Rarefaction curves rely on the abundance of sequences in a sample.
+Therefore, it only makes sense to generate rarefaction curves from signatures that were made with FASTQ files and that had abundance tracking turned on.
+Further, these curves may be more accurate if you build them with sequences from many samples from similar environments.
+In case signatures were built from reads that have not been k-mer trimmed, there is a filtering step that removes minhashes that are only observed in one sample at abundance 1 as these are likely sequencing errors. 
+Please note that this filtering process may invalidate downstream rarefaction curve convergence estimation as many of these methods evaluate singletons and doubletons in the data set.
+
+```{r signature_rarefaction}
+data(gut_signatures_df)
+
+# filter to a single k-mer size
+gut_signatures_df <- gut_signatures_df %>%
+  dplyr::filter(ksize == 31)
+
+rarefaction_df <- from_signatures_to_rarefaction_df(signatures_df = gut_signatures_df)
+head(rarefaction_df)
+```
+
+```{r plot_signatures-rarefaction}
+rarefaction_plt <- plot_signatures_rarefaction(rarefaction_df = rarefaction_df, fraction_of_points_to_plot = 1)
+rarefaction_plt
+```
+
+The plot produced by `plot_signatures_rarefaction` is a ggplot2 plot, so you can modify it by adding additional layers:
+```{r plot_signatures_rarefaction_mod}
+rarefaction_plt +
+  ggplot2::theme_minimal()
+```
+
+Color by sample name:
+```{r plot_signatures_rarefaction_mod2}
+rarefaction_plt +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_point(ggplot2::aes(color = name))
+```
+
+Add your own metadata to the `rarefaction_df` and use it in the plot:
+```{r plot_signatures_rarefaction_mod3}
+# create a metadata data frame 
+run_accessions <- c("SRR5936131", "SRR5947006", "SRR5935765",
+                    "SRR5936197", "SRR5946923", "SRR5946920")
+groups <- c("cd", "cd", "cd", "nonibd", "nonibd", "nonibd")
+metadata <- data.frame(run_accessions = run_accessions, 
+                       groups = groups) 
+
+# join the metadata data frame with the rarefaction_df
+rarefaction_df <- rarefaction_df %>%
+  dplyr::left_join(metadata, by = c("name" = "run_accessions"))
+
+# create and modify a plot
+plot_signatures_rarefaction(rarefaction_df = rarefaction_df, fraction_of_points_to_plot = 1) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_point(ggplot2::aes(color = groups))
+```
+
+## Working with the CSV output of sourmash compare
 
 * sourmash compare csv: 
     * `read_compare()`
     *  MDS plot: `make_compare_mds()`, `plot_compare_mds()`
     * heatmap: `plot_compare_heatmap()`
     
-### Working with the CSV output of sourmash gather
+## Working with the CSV output of sourmash gather
 
 * sourmash gather csv
     * `read_gather()`
     * barchart: `plot_gather_classified()`
     * upset plot: `from_gather_to_upset_df()`, `plot_gather_upset()`
     
-### Working with the CSV output of sourmash taxonomy annotate
+## Working with the CSV output of sourmash taxonomy annotate
 
 * sourmash taxonomy annotate csv
     * `read_taxonomy_annotate()`
@@ -210,7 +267,7 @@ It only makes sense to generate rarefaction curves from
     * to metacoder: `from_taxonomy_annotate_to_metacoder()`
     * to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
      
-### Upset utility functions
+## Upset utility functions
 
 The sourmashconsumr package includes utility functions to create and work with upset-formatted data frames.
 These data frames record the presence-absence of the value that is intersected between many samples
