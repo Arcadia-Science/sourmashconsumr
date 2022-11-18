@@ -180,6 +180,8 @@ print(fpaths)
 #head(signature_df)
 ```
 
+Signatures that are uncompressed (`*.sig`) or gzip compressed (`*.sig.gz`) can be read in by `read_signature()`.
+
 ### Visualizing shared k-mer content between samples with an upset plot
 
 The functions `from_signatures_to_upset_df()`, `plot_signatures_upset()` produce an upset plot that depicts the number of k-mers shared between sets of samples. 
