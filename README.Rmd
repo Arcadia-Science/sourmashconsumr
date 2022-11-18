@@ -45,12 +45,12 @@ To access the functions in the sourmashconsumr package, you can load it with:
 library(sourmashconsumr)
 ```
 
-The sourmashconsumr package contains a variety of functions to work with the outputs of the sourmash pythong package.
+The sourmashconsumr package contains a variety of functions to work with the outputs of the sourmash python package.
 `read*` functions read and parse the outputs of sourmash into data frames.
 `plot*` functions visualize the sourmash outputs.
 `from_*to_*` functions convert sourmash data frames into the formats of other popular R packages (e.g. phyloseq).
-sourmashconsumr also contains a few utility functions that work with other datatype (at this time, mostly upset data frames).
-See a complete list of functions below, sorted by data type that the function operates on:
+sourmashconsumr also contains a few utility functions that work with other datatypes (at this time, mostly upset data frames).
+See a complete list of functions below, sorted by sourmash output that the function operates on:
 
 * signatures (output by `sourmash sketch` or `sourmash compute`): 
     * `read_signature()`
