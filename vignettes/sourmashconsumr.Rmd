@@ -91,7 +91,7 @@ If you encounter problems with sourmash, please post an issue on the sourmash is
 
 Load the packages this vignette uses:
 
-```{r}
+```{r, message=FALSE}
 library(sourmashconsumr)
 library(dplyr)
 library(ggplot2)
@@ -112,8 +112,7 @@ Make a metadata frame that corresponds to the example data:
 run_accessions <- c("SRR5936131", "SRR5947006", "SRR5935765",
                     "SRR5936197", "SRR5946923", "SRR5946920")
 groups <- c("cd", "cd", "cd", "nonibd", "nonibd", "nonibd")
-metadata <- data.frame(run_accessions = run_accessions, 
-                       groups = groups) 
+metadata <- data.frame(run_accessions = run_accessions, groups = groups) 
 ```
 
 ### Example data
@@ -150,6 +149,30 @@ All of the sourmashconsumr functions that read in the sourmash outputs start wit
 All functions accepts compressed or uncompressed files and can read one or multiple files at a time.
 When multiple file paths are passed to a function, all files are read into a single data frame.
 
+<div class="warning" style='padding:0.1em; background-color:#F0F8FF; color:#000000'>
+<span>
+<p style='margin-top:1em; text-align:left'>
+<b>Explanation about accessing external files packaged with sourmashconsumr</b></p>
+<p style='margin-left:1em;'>
+Because some of the functions read external files, we've also included example sourmash outputs with the package to demonstrate how the `read*()` functions work.
+Specifying paths to data files packaged with an R package is a bit ugly...it takes advantage of the base R function `system.file` and information about the package to derive the file paths.
+While this is helpful because it allows anyone to access the files in a package no matter where the package is installed  on their computer, the syntax can be confusing because the example ends up looking a lot different than the code you would actually write. 
+Whenever you see `system.file()` in this vignette, know that when you go to run similar code on your own sourmash outputs, you need to specify the path to your file to run the command without all of the accompanying `system.file()` code.
+See an example below:
+
+```r
+# how we have to specify paths so that anyone can access the package data
+fpath <- system.file("extdata", "SRR5947006.sig.gz", package="sourmashconsumr")
+signature_df <- read_signature(fpath)
+```
+
+```r
+# how you will specify a path when you actually run the code
+signature_df <- read_signature("path/to/your_signature_file.sig")
+```
+</p>
+</div>
+
 ### Reading sourmash sigatures into R
 
 The sourmashconsumr function `read_signature()` reads sourmash signatures produced by the `sourmash sketch` or `sourmash compute` function into a data frame.
@@ -185,29 +208,7 @@ gut_compare_df
 
 ### Reading the CSV output of sourmash taxonomy annotate
 
-<div class="warning" style='padding:0.1em; background-color:#F0F8FF; color:#000000'>
-<span>
-<p style='margin-top:1em; text-align:left'>
-<b>Explanation about accessing external files packaged with sourmashconsumr</b></p>
-<p style='margin-left:1em;'>
-Because some of the functions read external files, we've also included example sourmash outputs with the package to demonstrate how the `read*()` functions work.
-Specifying paths to data files packaged with an R package is a bit ugly...it takes advantage of the base R function `system.file` and information about the package to derive the file paths.
-While this is helpful because it allows anyone to access the files in a package no matter where the package is installed  on their computer, the syntax can be confusing because the example ends up looking a lot different than the code you would actually write. 
-Whenever you see `system.file()` in this vignette, know that when you go to run similar code on your own sourmash outputs, you need to specify the path to your file to run the command without all of the accompanying `system.file()` code.
-See an example below:
 
-```r
-# how we have to specify paths so that anyone can access the package data
-fpath <- system.file("extdata", "SRR5947006.sig.gz", package="sourmashconsumr")
-signature_df <- read_signature(fpath)
-```
-
-```r
-# how you will specify a path when you actually run the code
-signature_df <- read_signature("path/to/your_signature_file.sig")
-```
-</p>
-</div>
 
 ## Working with sourmash signatures (FracMinHash sketches)
 
@@ -227,8 +228,6 @@ If there is a lot of variation in the samples, it might be difficult to interpre
 Still, it provides a nice complement to the sourmash compare results and plots as it gives more information about the nature of the intersections between samples.
 
 ```{r}
-data(gut_signatures_df)
-
 gut_signatures_df <- gut_signatures_df %>%
   dplyr::filter(ksize == 31)
 
@@ -268,8 +267,6 @@ You can downsample your signatures with sourmash prior to reading them into R us
 See the [sourmash documentation](https://sourmash.readthedocs.io) for more details. 
 
 ```{r signature_rarefaction}
-data(gut_signatures_df)
-
 # filter to a single k-mer size
 gut_signatures_df <- gut_signatures_df %>%
   dplyr::filter(ksize == 31)
@@ -584,14 +581,14 @@ head(from_upset_df_to_intersection_summary(gut_gather_upset_df))
 `from_upset_df_to_intersection_members()` reports the identity of objects that are shared by each group.
 
 ```{r}
-head(from_upset_df_to_intersection_members(gut_gather_upset_df))
+intersection_members <- from_upset_df_to_intersection_members(gut_gather_upset_df)
 ```
 
 The object that is output is a list, so it can be indexed into by name.
 For example, if we were curious about the objects that were observed in all samples, we could use the following:
 
 ```{r}
-from_upset_df_to_intersection_members(gut_gather_upset_df)$SRR5935765_SRR5936131_SRR5936197_SRR5946920_SRR5946923_SRR5947006
+intersection_members$SRR5935765_SRR5936131_SRR5936197_SRR5946920_SRR5946923_SRR5947006
 ```
 
 The upset functions work on any upset-formatted data frame, not just those that are created by the sourmashconsumr package.
