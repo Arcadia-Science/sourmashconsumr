@@ -542,14 +542,57 @@ Therefore, it's best to build metacoder objects from samples that were sketched 
 ## Upset utility functions
 
 The sourmashconsumr package includes utility functions to create and work with upset-formatted data frames.
-These data frames record the presence-absence of the value that is intersected between many samples
+These data frames record the presence-absence of the value that is intersected between many samples.
+The columns are the sample names, and the rows are the object that is shared by the samples.
+If a sample contained the object, a 1 appears in the column; if it did not, a 0 appears.
 
-* upset utilities
-    * `from_list_to_upset_df()`
-    * `from_upset_df_to_intersection_members()`
-    * `from_upset_df_to_intersection_summary()`
-    * `from_upset_df_to_intersections()`
-    
-SHOW THE HEAD OF AN UPSET DATAFRAME TO CONTEXTUALIZE THE FORMAT.
+```{r}
+head(gut_gather_upset_df)
+```
 
+The functions in the sourmashconsumr package pre-process or post-process this data structure to extract information from it.
+The `from_list_to_upset_df()` function is inspired by `UpSetR::fromList()`. 
+It creates the presence-absence data frame seen above, but unlike the `UpSetR::fromList()` function, it preserves the identity of the objects in the row names.
+The rownames recording row identity can then act as an index to add metadata to the presence-absence data frame that can then be visualized.
+In the sourmashconsumr package, this was necessary to be able to color the the upset plot bar graphs by group.
 
+The functions `from_upset_df_to_intersection_members()`, `from_upset_df_to_intersection_summary()`, and `from_upset_df_to_intersections()` take an upset-formatted data frame as input and report on the identity of intersections between groups of samples.
+
+`from_upset_df_to_intersections()` reports which samples contain an object.
+The object is recorded as the row name, and the intersection is reported as the sample names separated by an underscore.
+If a sample doesn't contain the object, that sample name is recorded as a 0.
+
+```{r}
+head(from_upset_df_to_intersections(gut_gather_upset_df))
+```
+
+The order of the column names is consistent between objects.
+```{r}
+from_upset_df_to_intersections(gut_gather_upset_df) %>%
+  dplyr::arrange(intersection) %>%
+  head()
+```
+
+`from_upset_df_to_intersection_summary()` summarizes the size of these intersections. 
+Below, sample `SRR5946923` has 47 objects that are only observed in that sample.
+These intersection sizes match those reported in the upset plot upper bar graph.
+
+```{r}
+head(from_upset_df_to_intersection_summary(gut_gather_upset_df))
+```
+
+`from_upset_df_to_intersection_members()` reports the identity of objects that are shared by each group.
+
+```{r}
+head(from_upset_df_to_intersection_members(gut_gather_upset_df))
+```
+
+The object that is output is a list, so it can be indexed into by name.
+For example, if we were curious about the objects that were observed in all samples, we could use the following:
+
+```{r}
+from_upset_df_to_intersection_members(gut_gather_upset_df)$SRR5935765_SRR5936131_SRR5936197_SRR5946920_SRR5946923_SRR5947006
+```
+
+The upset functions work on any upset-formatted data frame, not just those that are created by the sourmashconsumr package.
+They will be most meaningful if the upset data frame has row names.
