@@ -38,18 +38,36 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
 #' Agglomerate counts of same lineage to specified level of taxonomy.
 #'
 #' @description
-#' Inspired by phyloseq::tax_glom(), this method summarizes k-mer counts from genomes that have the same taxonomy at a user-specified taxonomy rank.
-#' Agglomeration occurs within each sample, meaning the number of k-mers is only summed within each query_name.
-#' This function returns a data frame with the columns `lineage`, `query_name`, and `n_unique_kmers`.
+#' Inspired by phyloseq::tax_glom(), this method summarizes some numeric variables from genomes that have the same taxonomy at a user-specified taxonomy rank.
+#' Agglomeration occurs within each sample, meaning the user-specified variable is only summed within each query_name.
+#' This function returns a data frame with the columns `lineage`, `query_name`, and the glom_var column that was specified.
+#' The accepted glom_vars that can be agglomerated are f_unique_to_query, f_unique_weighted, unique_intersect_bp, and n_unique_kmers.
+#' Each of these variables deals with the "unique" fraction of the gather match, meaning there is no double counting between the query and the genome matched.
+#' f_unique_weighted and n_unique_kmers are weighted by k-mer abundance while f_unique_to_query and unique_intersect_bp are not.
+#' f_unique_weighted is similar to relative abundance (where "f" stands for fraction -- if 100% of the query had a match in the gather database, this value would sum to 1).
+#' n_unique_kmers is the abundance-weighted number of unique hashes (k-mers) that overlapped between the query and the match in the database.
+#' This number is calculated by dividing the unique_intersect_bp by the scaled value and multiplying this value by the average k-mer abundance.
+#' Other variables (like f_orig_query) could sum > 1.
+#' Only one variable is agglomerated at a time.
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.
 #' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level
-#' @param glom_var Character. One of "n_unique_kmers" or "f_unique_to_query".
+#' @param glom_var Character. One of f_unique_to_query, f_unique_weighted, unique_intersect_bp, or n_unique_kmers.
 #'
 #' @return A data frame.
 #' @export
 #'
 #' @importFrom rlang .data
+#'
+#' @details
+#' Selecting which glom_var to use for downstream use cases can be difficult.
+#' We most frequently use f_unique_weighted and n_unique_kmers as these both account for the number of times a k-mer occurs in a data set.
+#' This is closer to counting the number of reads that would map against a reference genome than the other metrics.
+#' When our downstream use case deals with relative abundance, f_unique_weighted is a good choice.
+#' When the downstream use case needs count data, we use n_unique_kmers.
+#' Because we divide by the scaled value to generate this number, the value will be much lower than read mapping.
+#' However, doing it this way returns the actual number of k-mers sourmash counted.
+#' This tends work better for assumptions made by downstream statistical tools (e.g. for differential abundance analysis, machine learning, etc.).
 #'
 #' @examples
 #' \dontrun{
@@ -72,9 +90,9 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
-  if(!glom_var %in% c("intersect_bp", "f_orig_query", "f_unique_to_query", "f_unique_weighted", "n_unique_kmers")){
+  if(!glom_var %in% c("f_unique_to_query", "f_unique_weighted", "unique_intersect_bp", "n_unique_kmers")){
     # these are the only ones that make sense to me to agglomerate across levels of taxonomy.
-    stop("The variable you supplied is not a valid glom_var. Please choose from intersect_bp, f_orig_query, f_unique_to_query, f_unique_weighted, n_unique_kmers.")
+    stop("The variable you supplied is not a valid glom_var. Please choose from f_unique_to_query, f_unique_weighted, unique_intersect_bp, n_unique_kmers.")
   }
 
   taxonomy_annotate_df <- taxonomy_annotate_df %>%
