@@ -73,19 +73,12 @@ To access the functions in the sourmashconsumr package:
 library(sourmashconsumr)
 ```
 
-# Quickstart 
-
-```{r}
-# Load the library
-library(sourmashconsumr)
-```
-
 # Problems & getting help
 
 If you encounter any problems using sourmashconsumr, please post an issue on the issue tracker: https://github.com/Arcadia-Science/sourmashconsumr/issues.
 If you encounter problems with sourmash, please post an issue on the sourmash issue tracker: https://github.com/sourmash-bio/sourmash/issues.
 
-# Complete start
+# Package functionality
 
 ## Load example data and vignette dependencies
 
@@ -95,6 +88,7 @@ Load the packages this vignette uses:
 library(sourmashconsumr)
 library(dplyr)
 library(ggplot2)
+library(RColorBrewer)
 ```
 
 Load the example data sets:
@@ -148,6 +142,7 @@ Use the following code to access this information:
 All of the sourmashconsumr functions that read in the sourmash outputs start with `read_`.
 All functions accepts compressed or uncompressed files and can read one or multiple files at a time.
 When multiple file paths are passed to a function, all files are read into a single data frame.
+If you would like to read in multiple files at once, the `Sys.glob()` function or the `list.files()` function are useful to determine the paths for many files.
 
 <div class="warning" style='padding:0.1em; background-color:#F0F8FF; color:#000000'>
 <span>
@@ -186,29 +181,57 @@ head(signature_df)
 If you have many signatures that you would like to read into the same data frame, you can pass a character vector of file paths:
 
 ```{r read_signature_many}
-# grab the files paths for sourmashconsumr example data
-fpaths <- system.file("extdata", package = "sourmashconsumr") %>% list.files()
-fpaths <- fpaths[grepl(pattern = ".sig.gz", x = fpaths)]
-print(fpaths)
+# grab the files paths for two signatures in the sourmashconsumr example data
+fpath1 <- system.file("extdata", "SRR5947006.sig.gz", package="sourmashconsumr")
+fpath2 <- system.file("extdata", "SRR5935765.sig.gz", package="sourmashconsumr")
+fpaths <- c(fpath1, fpath2)
 # read in the signature files
-#signature_df <- read_signature(fpaths)
-
-#head(signature_df)
+signature_df <- read_signature(fpaths)
 ```
 
 ### Reading the CSV output of sourmash compare
 
+The sourmash compare output is a square matrix.
+The CSV has column names but no row names, but the rownames are symmetrical to the column names.
+The `read_compare_csv()` function reads in the compare CSV file and adds row names.
+You can choose whether the row labels are read in as a column named "sample" or as row names using the `sample_to_rownames` argument.
+
 ```{r}
 fpath <- system.file("extdata", "gut_compare.csv.gz", package = "sourmashconsumr")
-gut_compare_df <- read_compare_csv(fpath)
-gut_compare_df
+compare_df <- read_compare_csv(fpath, sample_to_rownames = F)
+compare_df
 ```
 
 ### Reading the CSV output of sourmash gather
 
+The `read_gather()` function reads in the CSV output by sourmash gather.
+You can optionally filter the matches using `intersect_bp_threshold`. 
+The function does no filtering by default.
+However, sourmash gather uses a threshold of 50,000 base pairs, so if you decreased this value when you ran sourmash gather, it may make sense to filter with `intersect_bp_thershold = 50000`.
+Most false positives are caused by contamination in the reference genomes in the database, so low filtering thresholds can improve accuracy.
+
+```{r}
+fpath <- system.file("extdata", "SRR5946920_gather_gtdbrs207_reps.csv.gz", package = "sourmashconsumr")
+gather_df <- read_gather(fpath, intersect_bp_threshold = 50000)
+head(gather_df)
+```
+
 ### Reading the CSV output of sourmash taxonomy annotate
 
+The `read_taxonomy_annotate()` function reads the CSV output by sourmash taxonomy annotate.
+Taxonomy annotate adds a taxonomic lineage column to the sourmash gather output.
+You can filter with `intersect_bp_threshold` (see above).
+You can also separate the lineage into taxonomy ranks using `separate_lineage`. 
+This function assumes that the lineage ranks are separated by semi-colons (;), and that the lineage is composed of a domain, phylum, class, order, family, genus, species, and strain.
+If information is missing, it is back-filled with `NA`s.
 
+```{r}
+fpath <- system.file("extdata", "SRR5946920_gather_gtdbrs207_reps.with-lineages.csv.gz", package = "sourmashconsumr")
+taxonomy_annotate_df <- read_taxonomy_annotate(fpath, 
+                                               intersect_bp_threshold = 50000,
+                                               separate_lineage = T)
+head(taxonomy_annotate_df)
+```
 
 ## Working with sourmash signatures (FracMinHash sketches)
 
@@ -451,37 +474,70 @@ Since upset plots are based on the presence or absence of lineages, the counts i
 
 ### Visualizing taxonomy with a sankey plot
 
-One sample
+The sankey plot is designed to show the taxonomic breakdown in one or many samples.
+The ribbons in the plot progressively split as the taxonomic lineage becomes more specific (e.g. from domain to phylum, phylum to class, etc.).
+The ribbon width displays the relative abundance of the taxonomic lineage.
+The `tax_glom_level` specifies which level of the taxonomic lineage to stop displaying the taxonomy.
+
+The sankey plot can be generated from one or many samples.
+Below is an example of a plot generated from one sample:
+
 ```{r, fig.width = 8, fig.height = 5}
 plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df %>%
                                 dplyr::filter(query_name == "SRR5935765"), 
                               tax_glom_level = "family")
 ```
 
-All samples
+And a plot generated from many samples:
+
 ```{r, fig.width = 8, fig.height = 5}
 plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
                               tax_glom_level = "order")
 ```
 
-* relative abundance is preserved in the plot
+The colors in the sankey plot are built using the function `grDevices::colorRampPalette()` on the RColorBrewer palette Set2.
+To change the palette, supply the `palette` argument with the hexcodes you would like to ramp up.
+
+```{r, fig.width = 8, fig.height = 5}
+plot_taxonomy_annotate_sankey(taxonomy_annotate_df = gut_taxonomy_annotate_df, 
+                              tax_glom_level = "order",
+                              palette = RColorBrewer::brewer.pal(8, "Set3"))
+```
 
 ### Visualizing taxonomic changes over time with a time series alluvial plot
 
-In this case, our samples aren't actually time series, so this plot doesn't really make sense.
+The time series alluvial plot shows how lineages observed in samples change. 
+It was designed to show how the fraction of taxonomic lineages in community change over time when samples are taken in time series.
+One level of taxonomy (e.g. order) is shown throughout the plot, and the alluvial ribbons show how the fraction of those lineages change between samples. 
+
+Our example data aren't actually time series, so this plot doesn't really make sense.
 However, for demonstration purposes, we'll use our test data anyway to show how this plot would work if we were working with time series.
+Eventually, we'll update the vignette to show what this looks like with real time series data.
 
 ```{r, fig.width= 7, fig.height= 6}
 time_df <- data.frame(query_name = metadata$run_accessions,
                       time = c(1, 2, 3, 4, 5, 6))
 
 plot_taxonomy_annotate_ts_alluvial(taxonomy_annotate_df = gut_taxonomy_annotate_df,
-                                  time_df = time_df, 
-                                  tax_glom_level = "family",
-                                  fraction_threshold = 0.01)
+                                   time_df = time_df, 
+                                   tax_glom_level = "family",
+                                   fraction_threshold = 0.01)
 ```
 
-Eventually, we'll update the vignette to show what this looks like with real time series data.
+In this plot, the `f_unique_weighted` value from the sourmash gather results is agglomerated to the user-specified `tax_glom_level`.
+The `fraction_threshold` is the minimum fraction that a lineage needs to be present in at least one sample in the time series for the lineage to get its own alluvial ribbon on the plot.
+If lineage is present at less than this threshold, it will get grouped into the "other" category.
+
+The plot outputs by `plot_taxonomy_annotate_ts_alluvial()` is a ggplot.
+To change the palette, add a layer to the plot.
+
+```{r, fig.width= 7, fig.height= 6}
+plot_taxonomy_annotate_ts_alluvial(taxonomy_annotate_df = gut_taxonomy_annotate_df,
+                                   time_df = time_df, 
+                                   tax_glom_level = "family",
+                                   fraction_threshold = 0.01) +
+  ggplot2::scale_fill_brewer(palette = "Paired")
+```
 
 ### Converting from taxonomy annotate to phyloseq object
 
