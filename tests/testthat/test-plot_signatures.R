@@ -30,8 +30,7 @@ test_that("from_signatures_to_upset_df produces an upset df", {
 # signatures to rarefaction curves ----------------------------------------
 
 test_that("from_signatures_to_rarefaction_df runs", {
-  sig_df <- Sys.glob("SRR*ass.sig*") %>%
-    purrr::map_dfr(read_signature)
+  sig_df <- read_signature(Sys.glob("SRR*ass.sig*"))
   # should fail because we have multiple k-mer sizes
   expect_error(from_signatures_to_rarefaction_df(sig_df))
   sig_df <- sig_df %>%
@@ -42,8 +41,7 @@ test_that("from_signatures_to_rarefaction_df runs", {
 })
 
 test_that("plot_signatures_rarefaction produces ggplot with right info", {
-  sig_df <- Sys.glob("SRR*ass.sig*") %>%
-    purrr::map_dfr(read_signature) %>%
+  sig_df <- read_signature(Sys.glob("SRR*ass.sig*")) %>%
     dplyr::filter(ksize == 21)
   rarecurve_df <- from_signatures_to_rarefaction_df(sig_df, step = 1)
   plt1 <- plot_signatures_rarefaction(rarecurve_df, fraction_of_points_to_plot = 1)
@@ -51,5 +49,5 @@ test_that("plot_signatures_rarefaction produces ggplot with right info", {
   expect(nrow(plt1$data) > nrow(plt2$data), ok = T) # the data underlying the first plot should have more rows than the second
   expect_equal(plt1$theme, plt2$theme) # theme should match between plots
   plt1 <- plt1 + ggplot2::theme_minimal()
-  expect(plt1$theme != plt2$theme, ok = T) # after adding a ggplot layer themes should no longer be equal
+  expect(plt1$theme$panel.background != plt2$theme$panel.background, ok = T) # after changing a ggplot layer themes should no longer be equal
 })
