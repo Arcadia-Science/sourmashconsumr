@@ -29,6 +29,13 @@ test_that("taxonomic agglomeration works correctly", {
   expect_true(nrow(tax_annot_df2) > nrow(tax_glom_df4))
 })
 
+test_that("taxnomic agglomeration fails with a variable that isn't an option", {
+  tax_annot_df1 <- read_taxonomy_annotate(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"), separate_lineage = T)
+  # when no tax glom level is defined, the same df is returned
+  expect_error(tax_glom_taxonomy_annotate(tax_annot_df1, tax_glom_level = "order", glom_var = "std_abund"),
+               regexp = "The variable you supplied is not a valid glom_var.")
+})
+
 test_that("make_agglom_cols returns the right columns", {
   expect_equal(make_agglom_cols(tax_glom_level = "phylum", with_query_name = T),
                c("query_name", "domain", "phylum"))

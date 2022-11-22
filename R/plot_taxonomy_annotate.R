@@ -72,28 +72,25 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
-  if(glom_var == "n_unique_kmers"){
-    taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
-      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
-      dplyr::ungroup() %>%
-      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select("lineage", "query_name", "n_unique_kmers")
+  if(!glom_var %in% c("intersect_bp", "f_orig_query", "f_unique_to_query", "f_unique_weighted", "n_unique_kmers")){
+    # these are the only ones that make sense to me to agglomerate across levels of taxonomy.
+    stop("The variable you supplied is not a valid glom_var. Please choose from intersect_bp, f_orig_query, f_unique_to_query, f_unique_weighted, n_unique_kmers.")
   }
-  # at the moment, this was easier to hard code with an if statement.
-  # If I end up adding more glom vars, I'll figure out how to do this actually cleverly instead of copying and pasting the whole code chunk
-  if(glom_var == "f_unique_to_query"){
-    taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select("genome_accession", "lineage", "query_name", "f_unique_to_query") %>%
-      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query)) %>%
-      dplyr::ungroup() %>%
-      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select("lineage", "query_name", "f_unique_to_query")
-  }
+
+  taxonomy_annotate_df <- taxonomy_annotate_df %>%
+    # temporarily rename the variable to "glom_var_tmp" so we can use the same code across all vars.
+    dplyr::rename(glom_var_tmp = dplyr::all_of(glom_var)) %>%
+    dplyr::select("genome_accession", "lineage", "query_name", "glom_var_tmp") %>%
+    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+    dplyr::summarize(glom_var_tmp = sum(.data$glom_var_tmp)) %>%
+    dplyr::ungroup() %>%
+    tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+    dplyr::select("lineage", "query_name", "glom_var_tmp")
+
+  # rename the glom_var_tmp back to whatever the glom_var actually was
+  colnames(taxonomy_annotate_df) <- c("lineage", "query_name", glom_var)
+
   return(taxonomy_annotate_df)
 }
 
@@ -321,7 +318,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   # agglomerate to specified taxonomy level
   if(!is.null(tax_glom_level)){
-    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, glom_var = "f_unique_to_query")
+    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, glom_var = "f_unique_weighted")
   }
 
   # join the tax df with the time df
@@ -330,7 +327,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   # determine which taxa to plot in their own alluvial ribbon.
   keep_taxa <- taxonomy_annotate_df %>%
-    dplyr::filter(.data$f_unique_to_query > fraction_threshold)
+    dplyr::filter(.data$f_unique_weighted > fraction_threshold)
 
   # determine agglom cols
   if(!is.null(tax_glom_level)){
@@ -347,17 +344,17 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
   alluvium_df <- taxonomy_annotate_df %>%
     tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
     # rename the column that will represent the alluvium ribbons to "tax_glom_col" so we can pass it to ggplot to as .data$
-    dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_to_query") %>%
+    dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_weighted") %>%
     dplyr::mutate(tax_glom_col = ifelse(.data$lineage %in% keep_taxa$lineage, .data$tax_glom_col, "other")) %>%
     dplyr::select(-"lineage") %>%
     # creating the "other" designation creates a variable that is duplicated.
     # ggalluvium is not smart enough to sum over that variable itself a throws and error
     # the following lines of code won't change the value of f_unique_to_query for anything other than "other"
     dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
-    dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query))
+    dplyr::summarize(f_unique_weighted = sum(.data$f_unique_weighted))
 
   alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
-                                                  y = .data$f_unique_to_query,
+                                                  y = .data$f_unique_weighted,
                                                   alluvium = .data$tax_glom_col,
                                                   label    = .data$tax_glom_col,
                                                   fill     = .data$tax_glom_col)) +
