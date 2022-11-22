@@ -240,7 +240,8 @@ plot_signatures_rarefaction <- function(rarefaction_df, fraction_of_points_to_pl
   plt <- ggplot2::ggplot(rarefaction_df,
                          ggplot2::aes(x = .data$num_kmers_sampled, y = .data$num_kmers_observed)) +
     ggplot2::geom_point() +
-    ggplot2::labs(x = "number of sampled k-mers", y = "number of distinct k-mers observed")
+    ggplot2::labs(x = "number of sampled k-mers", y = "number of distinct k-mers observed") +
+    ggplot2::theme_classic()
 
   return(plt)
 }
