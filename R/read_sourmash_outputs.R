@@ -228,7 +228,11 @@ get_scaled_for_max_hash <- function(sig_max_hash){
   scaled
 }
 
-#' Read sourmash signatures into a dataframe
+#' Read one sourmash signature into a dataframe
+#'
+#' @description
+#' `read_signature_one` reads one signature into a data frame.
+#' It's mostly a dummy function, but breaking it out this way allows one or many files to be passed to `read_signature`.
 #'
 #' @param file Path to signature (json) file output by sourmash sketch (previously sourmash compute).
 #' @param compliant Boolean indicating whether signature columns should be compliant; the json fields changed across versions of sourmash. This may drop deprecated columns like 'type' but will allow you to bind many signatures into a single data frame even if they were sketched with different versions of sourmash.
@@ -242,9 +246,9 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #' \dontrun{
 #' read_signature("tests/testthat/SRR18071810.sig")
 #' }
-read_signature <- function(file, compliant = TRUE){
+read_signature_one <- function(file, compliant = TRUE){
   stopifnot(file.exists(file)) # stop if the file doesn't exist
-  # read in the signature json file to a dataframe and calculcate the scaled value
+  # read in the signature json file to a data frame and calculate the scaled value
   sig_df <- jsonlite::fromJSON(file) %>%
     tidyr::unnest(tidyselect::one_of("signatures")) %>%
     tidyr::unnest(tidyselect::any_of(c("mins", "abundances"))) # any_of allows abundances to be present in signature or not
@@ -267,5 +271,30 @@ read_signature <- function(file, compliant = TRUE){
       dplyr::select(tidyselect::any_of(sourmashv4_sig_fields))
   }
 
+  return(sig_df)
+}
+
+#' Read sourmash signature or signatures into a dataframe
+#'
+#' @description
+#' `read_signature()` reads in one or many signatures (JSON files) produced by the command line function sourmash sketch (previously sourmash compute).
+#'
+#' @param file Path to signature (json) file or files output by sourmash sketch (previously sourmash compute).
+#' @param compliant Boolean indicating whether signature columns should be compliant; the json fields changed across versions of sourmash. This may drop deprecated columns like 'type' but will allow you to bind many signatures into a single data frame even if they were sketched with different versions of sourmash.
+#'
+#' @return A tibble.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' read_signature()
+#' }
+read_signature <- function(file, compliant = TRUE){
+  if(length(file) > 1) {
+    sig_df <- file %>%
+      purrr::map_dfr(read_signature_one, compliant = compliant)
+  } else if(length(file) == 1) {
+    sig_df <- read_signature_one(file, compliant = compliant)
+  }
   return(sig_df)
 }

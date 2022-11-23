@@ -29,6 +29,13 @@ test_that("taxonomic agglomeration works correctly", {
   expect_true(nrow(tax_annot_df2) > nrow(tax_glom_df4))
 })
 
+test_that("taxnomic agglomeration fails with a variable that isn't an option", {
+  tax_annot_df1 <- read_taxonomy_annotate(file = Sys.glob("*gtdbrs207_reps.with-lineages.csv"), separate_lineage = T)
+  # when no tax glom level is defined, the same df is returned
+  expect_error(tax_glom_taxonomy_annotate(tax_annot_df1, tax_glom_level = "order", glom_var = "std_abund"),
+               regexp = "The variable you supplied is not a valid glom_var.")
+})
+
 test_that("make_agglom_cols returns the right columns", {
   expect_equal(make_agglom_cols(tax_glom_level = "phylum", with_query_name = T),
                c("query_name", "domain", "phylum"))
@@ -59,6 +66,11 @@ test_that("plot_taxonomy_annotate_upset returns a plot", {
   upset_inputs <- from_taxonomy_annotate_to_upset_inputs(tax_annot_df1, "class")
   plt <- plot_taxonomy_annotate_upset(upset_inputs, fill = "phylum")
   expect_equal(class(plt)[[3]], "ggplot")
+  # check that it still returns a plot when no tax glom was performed initially
+  upset_inputs2 <- from_taxonomy_annotate_to_upset_inputs(tax_annot_df1)
+  plt2 <- plot_taxonomy_annotate_upset(upset_inputs2, fill = NULL)
+  expect_equal(class(plt2)[[3]], "ggplot")
+
 })
 
 # sankey plot -------------------------------------------------------------

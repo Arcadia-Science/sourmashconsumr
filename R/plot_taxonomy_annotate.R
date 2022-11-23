@@ -38,18 +38,36 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
 #' Agglomerate counts of same lineage to specified level of taxonomy.
 #'
 #' @description
-#' Inspired by phyloseq::tax_glom(), this method summarizes k-mer counts from genomes that have the same taxonomy at a user-specified taxonomy rank.
-#' Agglomeration occurs within each sample, meaning the number of k-mers is only summed within each query_name.
-#' This function returns a data frame with the columns `lineage`, `query_name`, and `n_unique_kmers`.
+#' Inspired by phyloseq::tax_glom(), this method summarizes some numeric variables from genomes that have the same taxonomy at a user-specified taxonomy rank.
+#' Agglomeration occurs within each sample, meaning the user-specified variable is only summed within each query_name.
+#' This function returns a data frame with the columns `lineage`, `query_name`, and the glom_var column that was specified.
+#' The accepted glom_vars that can be agglomerated are f_unique_to_query, f_unique_weighted, unique_intersect_bp, and n_unique_kmers.
+#' Each of these variables deals with the "unique" fraction of the gather match, meaning there is no double counting between the query and the genome matched.
+#' f_unique_weighted and n_unique_kmers are weighted by k-mer abundance while f_unique_to_query and unique_intersect_bp are not.
+#' f_unique_weighted is similar to relative abundance (where "f" stands for fraction -- if 100% of the query had a match in the gather database, this value would sum to 1).
+#' n_unique_kmers is the abundance-weighted number of unique hashes (k-mers) that overlapped between the query and the match in the database.
+#' This number is calculated by dividing the unique_intersect_bp by the scaled value and multiplying this value by the average k-mer abundance.
+#' Other variables (like f_orig_query) could sum > 1.
+#' Only one variable is agglomerated at a time.
 #'
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. Agglomeration occurs within each query.
 #' @param tax_glom_level Character. NULL by default, meaning no agglomeration is done. Valid options are "domain", "phylum", "class", "order", "family", "genus", and "species". When a valid option is supplied, k-mer counts are agglomerated to that level
-#' @param glom_var Character. One of "n_unique_kmers" or "f_unique_to_query".
+#' @param glom_var Character. One of f_unique_to_query, f_unique_weighted, unique_intersect_bp, or n_unique_kmers.
 #'
 #' @return A data frame.
 #' @export
 #'
 #' @importFrom rlang .data
+#'
+#' @details
+#' Selecting which glom_var to use for downstream use cases can be difficult.
+#' We most frequently use f_unique_weighted and n_unique_kmers as these both account for the number of times a k-mer occurs in a data set.
+#' This is closer to counting the number of reads that would map against a reference genome than the other metrics.
+#' When our downstream use case deals with relative abundance, f_unique_weighted is a good choice.
+#' When the downstream use case needs count data, we use n_unique_kmers.
+#' Because we divide by the scaled value to generate this number, the value will be much lower than read mapping.
+#' However, doing it this way returns the actual number of k-mers sourmash counted.
+#' This tends work better for assumptions made by downstream statistical tools (e.g. for differential abundance analysis, machine learning, etc.).
 #'
 #' @examples
 #' \dontrun{
@@ -72,28 +90,25 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
   }
 
-  if(glom_var == "n_unique_kmers"){
-    taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select("genome_accession", "lineage", "query_name", "n_unique_kmers") %>%
-      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(n_unique_kmers = sum(.data$n_unique_kmers)) %>%
-      dplyr::ungroup() %>%
-      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select("lineage", "query_name", "n_unique_kmers")
+  if(!glom_var %in% c("f_unique_to_query", "f_unique_weighted", "unique_intersect_bp", "n_unique_kmers")){
+    # these are the only ones that make sense to me to agglomerate across levels of taxonomy.
+    stop("The variable you supplied is not a valid glom_var. Please choose from f_unique_to_query, f_unique_weighted, unique_intersect_bp, n_unique_kmers.")
   }
-  # at the moment, this was easier to hard code with an if statement.
-  # If I end up adding more glom vars, I'll figure out how to do this actually cleverly instead of copying and pasting the whole code chunk
-  if(glom_var == "f_unique_to_query"){
-    taxonomy_annotate_df <- taxonomy_annotate_df %>%
-      dplyr::select("genome_accession", "lineage", "query_name", "f_unique_to_query") %>%
-      tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-      dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query)) %>%
-      dplyr::ungroup() %>%
-      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-      dplyr::select("lineage", "query_name", "f_unique_to_query")
-  }
+
+  taxonomy_annotate_df <- taxonomy_annotate_df %>%
+    # temporarily rename the variable to "glom_var_tmp" so we can use the same code across all vars.
+    dplyr::rename(glom_var_tmp = dplyr::all_of(glom_var)) %>%
+    dplyr::select("genome_accession", "lineage", "query_name", "glom_var_tmp") %>%
+    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
+    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+    dplyr::summarize(glom_var_tmp = sum(.data$glom_var_tmp)) %>%
+    dplyr::ungroup() %>%
+    tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+    dplyr::select("lineage", "query_name", "glom_var_tmp")
+
+  # rename the glom_var_tmp back to whatever the glom_var actually was
+  colnames(taxonomy_annotate_df) <- c("lineage", "query_name", glom_var)
+
   return(taxonomy_annotate_df)
 }
 
@@ -157,7 +172,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' The bar chart that displays the intersection size between samples can optionally be colored by taxonomy lineage (e.g. phylum).
 #'
 #' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
-#' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Uses the Set2 palette so cannot visualize more than 8 levels.
+#' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.
 #'
 #' @return A ComplexUpset plot
 #' @export
@@ -188,17 +203,25 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
       tibble::rownames_to_column("lineage") %>%
       dplyr::left_join(taxonomy_annotate_df, by = "lineage") %>%
       tibble::column_to_rownames("lineage")
+
+    # plot the upset plot
+    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
+                               base_annotations=list(
+                                 '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
+                                                                              text_colors=c(on_background='black', on_bar='black'),
+                                                                              mapping=ggplot2::aes(fill = .data$fill)) +
+                                   ggplot2::scale_fill_brewer(palette = "Set2") +
+                                   ggplot2::labs(fill = fill))
+    )
+    return(plt)
   }
 
   # plot the upset plot
   plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                                                            text_colors=c(on_background='black', on_bar='black'),
-                                                                            mapping=ggplot2::aes(fill = .data$fill)) +
-                                 ggplot2::scale_fill_brewer(palette = "Set2") +
-                                 ggplot2::labs(fill = fill))
-  )
+                                                                            text_colors=c(on_background='black', on_bar='black'))
+  ))
   return(plt)
 }
 
@@ -313,7 +336,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   # agglomerate to specified taxonomy level
   if(!is.null(tax_glom_level)){
-    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, glom_var = "f_unique_to_query")
+    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, glom_var = "f_unique_weighted")
   }
 
   # join the tax df with the time df
@@ -322,7 +345,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   # determine which taxa to plot in their own alluvial ribbon.
   keep_taxa <- taxonomy_annotate_df %>%
-    dplyr::filter(.data$f_unique_to_query > fraction_threshold)
+    dplyr::filter(.data$f_unique_weighted > fraction_threshold)
 
   # determine agglom cols
   if(!is.null(tax_glom_level)){
@@ -339,17 +362,17 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
   alluvium_df <- taxonomy_annotate_df %>%
     tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
     # rename the column that will represent the alluvium ribbons to "tax_glom_col" so we can pass it to ggplot to as .data$
-    dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_to_query") %>%
+    dplyr::select("query_name", "time", "lineage", tax_glom_col = agglom_cols[length(agglom_cols)], "f_unique_weighted") %>%
     dplyr::mutate(tax_glom_col = ifelse(.data$lineage %in% keep_taxa$lineage, .data$tax_glom_col, "other")) %>%
     dplyr::select(-"lineage") %>%
     # creating the "other" designation creates a variable that is duplicated.
     # ggalluvium is not smart enough to sum over that variable itself a throws and error
     # the following lines of code won't change the value of f_unique_to_query for anything other than "other"
     dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
-    dplyr::summarize(f_unique_to_query = sum(.data$f_unique_to_query))
+    dplyr::summarize(f_unique_weighted = sum(.data$f_unique_weighted))
 
   alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
-                                                  y = .data$f_unique_to_query,
+                                                  y = .data$f_unique_weighted,
                                                   alluvium = .data$tax_glom_col,
                                                   label    = .data$tax_glom_col,
                                                   fill     = .data$tax_glom_col)) +
