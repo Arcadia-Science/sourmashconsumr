@@ -384,3 +384,100 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   return(alluvial_plt)
 }
+
+# predict number of strains for each species detected ---------------------
+
+#' Estimate the number of strains in a sample for each species detected.
+#'
+#' @description
+#' It uses two metrics produced by sourmash gather to predict the number of strains present: `f_match` and `average_abund`.
+#' `f_match` is the fraction of the matched genome that is contained within the query sample.#'
+#' If multiple genomes from one species are identified by sourmash gather, most of the time that occurs because the genome in a query sample is different from genomes in databases
+#' so multiple genomes that each cover a distinct portion of the genome that is truly present are returned as matches.
+#' However, the fraction of a single genome within that species that matched against the query decreases with each successive match.
+#' This is consistent with the idea of pangenomes -- the single true genome in our query matches many different parts of genomes in the database.
+#' When this happens, the sum fraction matched (`f_match`) by all genomes within a species within a single query should not exceed ~1.
+#' When we run gather on single genomes, the real value we observe for the sum f_match ranged between:
+#' 0.046 (for genomes that only had ~genus-level relatives in the database) and 1.04 (for genomes that had many close matches in the database).
+#' `average_abund` is the average abundance of k-mers in the query sample that matched against the genome.
+#' If only one strain for a given species is present in the query sample, all genomes returned within that species should have approximately the same abundance.
+#' If there are multiple strains present, the abundance may vary between the returned genomes.
+#' This function has not been systematically evaluated against gold standard data sets.
+#' We feel reasonably confident that it is a good starting place for strain-level analysis (see details below for caveats) but additional validated methods should be used to confirm findings.
+#'
+#' @details
+#' In this context, we refer to _strain_ as any sub-species level variation.
+#' This function uses genomes as the unit of strain -- each genome is considered a different strain.
+#' Sourmash gather compares a query (here, a metagenome) against a database (GenBank microbial genomes) and provides the minimum set of genomes the cover all of the k-mers in the query that are in the database. At least two things can be happening when sourmash gather returns two genomes of the same species (e.g. different strains) as a match to the same metagenome sample:
+#' 1. Both strains may be present in the metagenome
+#' 2. Only one strain may be truly present in the metagenome, but that strain is not contained within our current reference database. Instead, pieces of that strain's genome are in other genomes in the database. The genome in the database that contains the largest overlap with the genome in the metagenome is returned first as the best match. Then, other genomes in the database are returned that match other portions of the metagenome strain's genome that wasn't contained in the best match.
+#' In reality, some combination of these two things probably happens. This means that a few things for interpretation of strain-level results from sourmash gather:
+#' 1. We can't detect strain variation if there is only one genome for a given species in the database using sourmash gather/taxonomy alone (variant calling tools or tools that look at variation in assembly graphs would be more successful for this use case).
+#' 2. We can't interpret the sourmash gather/taxonomy results alone to conclusively detect strain variation, but it is a good place to start to figure out where to dig in deeper.
+#'
+#' @param taxonomy_annotate_df
+#'
+#' @return
+#' @export
+#'
+#' @importFrom rlang .data
+#'
+#' @examples
+from_taxonomy_annotate_to_num_strains <- function(taxonomy_annotate_df){
+  # check if query name is all NAs, fill it in with query_filename
+  if(all(is.na(taxonomy_annotate_df$query_name))){
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
+      dplyr::mutate(query_name = ifelse(is.na(.data$query_name), basename(.data$query_filename), .data$query_name))
+  }
+  # F_MATCH
+  # for each query in taxonomy_annotate_df, count how many genomes are observed per species
+  taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("~/github/2022-strains/infant_ts/SRR*lineage*csv"))
+  #taxonomy_annotate_df <- read_taxonomy_annotate(Sys.glob("tests/testthat/SRR*lineage*csv"))
+  more_than_one_genome_observed_for_species <- taxonomy_annotate_df %>%
+    dplyr::group_by(query_name, species) %>%
+    dplyr::tally() %>%
+    dplyr::filter(n > 1)
+
+  f_match <- taxonomy_annotate_df %>%
+    dplyr::filter(.data$species %in% more_than_one_genome_observed_for_species$species) %>% # filter to species with more than one genome observed
+    dplyr::group_by(query_name, species) %>%
+    dplyr::summarise(species_f_match = sum(.data$f_match)) %>%
+    dplyr::arrange(dplyr::desc(species_f_match))
+
+  f_match_filtered <- f_match %>%
+    dplyr::filter(species_f_match > 1.1) %>%
+    # create a vector to filter with so we only get combinations that passed the filter
+    dplyr::mutate(query_name_species = paste0(.data$query_name, "-", .data$species))
+
+  # ABUNDANCE -- I don't actually know what to do here, so to start,
+  # I'm just coding to flag species where average kmer abundances for genomes deviate by more than 2.
+  average_abund <- taxonomy_annotate_df %>%
+    dplyr::filter(.data$species %in% more_than_one_genome_observed_for_species$species) %>% # filter to species with more than one genome observed
+    dplyr::group_by(query_name, species) %>%
+    dplyr::summarise(min_average_abund = min(average_abund),
+                     max_average_abund = max(average_abund)) %>%
+    dplyr::mutate(range_average_abund = max_average_abund - min_average_abund)
+
+  average_abund_filtered <- average_abund %>%
+    dplyr::filter(range_average_abund >= 10)
+
+  # CHECK IF THERE IS NOTHING TO FILTER WTIH AND PLOT, AND EXIT WITH HELPFUL MESSAGE ABOUT THAT
+
+  # filter to the species that meet the criteria
+  ggplot2::ggplot(taxonomy_annotate_df %>%
+                    dplyr::mutate(query_name_species = paste0(.data$query_name, "-", .data$species)) %>%
+                    #dplyr::filter(.data$species %in% average_abund_filtered$species) %>%
+                    dplyr::filter(.data$query_name_species %in% f_match_filtered$query_name_species),
+                  ggplot2::aes(x = stats::reorder(genome_accession, -f_match),
+                               y = average_abund,
+                               label = round(f_match, digits = 2))) +
+    ggplot2::geom_point(ggplot2::aes(size = f_match)) +
+    ggplot2::coord_flip() +
+    ggplot2::facet_wrap(~query_name + species, scales = "free") +
+    ggrepel::geom_text_repel(size = 2, color = "grey") +
+    #ggplot2::scale_y_sqrt() +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(y = "average abundance of k-mers in genome",
+                  x = "genome accession")
+
+}
