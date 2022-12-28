@@ -591,8 +591,9 @@ If your samples of interest come from two different groups, you can also use the
 Note this only works with metacoder >= 0.3.5.3. 
 You may need to install the development version of metacoder to access this functionality. 
 You can check which version of metacoder you have installed using `packageVersion("metacoder")`.
+(At the time this vignette was written, this fucntionality was not available on CRAN so the below code was not executed.)
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval = F}
 # use metacoder function compare_groups() to compare abundances between cd and nonibd gut microbiomes
 gut_metacoder$data$diff_table <- metacoder::compare_groups(gut_metacoder, data = "tax_abund",
                                                            cols = metadata$run_accessions,
