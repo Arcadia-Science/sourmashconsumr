@@ -587,6 +587,29 @@ metacoder::heat_tree(gut_metacoder,
                      initial_layout = "reingold-tilford") # Node location algorithm 
 ```
 
+If your samples of interest come from two different groups, you can also use the metacoder functions `compare_groups` and `heat_tree_matrix` to visualize the differences between groups. 
+Note this only works with metacoder >= 0.3.5.3. 
+You may need to install the development version of metacoder to access this functionality. 
+You can check which version of metacoder you have installed using `packageVersion("metacoder")`.
+
+```{r, warning=FALSE}
+# use metacoder function compare_groups() to compare abundances between cd and nonibd gut microbiomes
+gut_metacoder$data$diff_table <- metacoder::compare_groups(gut_metacoder, data = "tax_abund",
+                                                           cols = metadata$run_accessions,
+                                                           groups = metadata$groups)
+# visualize the differences between groups using the metacoder function heat_tree_matrix()
+metacoder::heat_tree_matrix(gut_metacoder,
+                            data = "diff_table",
+                            node_size = n_obs,
+                            node_label = taxon_names,
+                            node_color = log2_median_ratio,
+                            node_color_range = metacoder::diverging_palette(),
+                            node_color_trans = "linear",
+                            node_color_interval = c(-3, 3),
+                            edge_color_interval = c(-3, 3),
+                            node_size_axis_label = "Abund of taxonomic lineage",
+                            node_color_axis_label = "Log2 ratio median proportions")
+```
 
 Like the phyloseq object, the metacoder object is built from the number of abundance-weighted unique hashes (k-mers) that were identified in each sample for each taxonomic lineage.
 This means that the scaled value will impact the counts in the final metacoder object.
