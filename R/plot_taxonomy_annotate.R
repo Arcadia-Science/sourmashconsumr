@@ -408,10 +408,12 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 #' @details
 #' In this context, we refer to _strain_ as any sub-species level variation.
 #' This function uses genomes as the unit of strain -- each genome is considered a different strain.
-#' Sourmash gather compares a query (here, a metagenome) against a database (GenBank microbial genomes) and provides the minimum set of genomes the cover all of the k-mers in the query that are in the database. At least two things can be happening when sourmash gather returns two genomes of the same species (e.g. different strains) as a match to the same metagenome sample:
+#' Sourmash gather compares a query (here, a metagenome) against a database (such as GenBank microbial genomes) and provides the minimum set of genomes that cover all of the k-mers in the query that are in the database.
+#' At least two things could be happening when sourmash gather returns two genomes of the same species (e.g. different strains) as a match to the same metagenome sample:
 #' 1. Both strains may be present in the metagenome
 #' 2. Only one strain may be truly present in the metagenome, but that strain is not contained within our current reference database. Instead, pieces of that strain's genome are in other genomes in the database. The genome in the database that contains the largest overlap with the genome in the metagenome is returned first as the best match. Then, other genomes in the database are returned that match other portions of the metagenome strain's genome that wasn't contained in the best match.
-#' In reality, some combination of these two things probably happens. This means that a few things for interpretation of strain-level results from sourmash gather:
+#' In reality, some combination of these two things probably happens.
+#' This means a few things for interpretation of strain-level results from sourmash gather/taxonomy:
 #' 1. We can't detect strain variation if there is only one genome for a given species in the database using sourmash gather/taxonomy alone (variant calling tools or tools that look at variation in assembly graphs would be more successful for this use case).
 #' 2. We can't interpret the sourmash gather/taxonomy results alone to conclusively detect strain variation, but it is a good place to start to figure out where to dig in deeper.
 #'
@@ -423,7 +425,7 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 #' @importFrom rlang .data
 #'
 #' @examples
-from_taxonomy_annotate_to_num_strains <- function(taxonomy_annotate_df){
+from_taxonomy_annotate_to_multi_strains <- function(taxonomy_annotate_df){
   # check if query name is all NAs, fill it in with query_filename
   if(all(is.na(taxonomy_annotate_df$query_name))){
     taxonomy_annotate_df <- taxonomy_annotate_df %>%
@@ -431,7 +433,8 @@ from_taxonomy_annotate_to_num_strains <- function(taxonomy_annotate_df){
   }
   # F_MATCH
   # for each query in taxonomy_annotate_df, count how many genomes are observed per species
-  taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("~/github/2022-strains/infant_ts/SRR*lineage*csv"))
+  taxonomy_annotate_df <- read_taxonomy_annotate(file = Sys.glob("~/github/2022-sourmashconsumr-validation/outputs/sourmash_taxonomy/day*lineages.csv"))
+  #taxonomy_annotate_df <- read_taxonomy_annotate(file = "~/github/2022-sourmashconsumr-validation/outputs/sourmash_taxonomy/CAMI_low_vs_source_genomes.with-lineages.csv")
   #taxonomy_annotate_df <- read_taxonomy_annotate(Sys.glob("tests/testthat/SRR*lineage*csv"))
   more_than_one_genome_observed_for_species <- taxonomy_annotate_df %>%
     dplyr::group_by(query_name, species) %>%
@@ -451,22 +454,40 @@ from_taxonomy_annotate_to_num_strains <- function(taxonomy_annotate_df){
 
   # ABUNDANCE -- I don't actually know what to do here, so to start,
   # I'm just coding to flag species where average kmer abundances for genomes deviate by more than 2.
-  average_abund <- taxonomy_annotate_df %>%
-    dplyr::filter(.data$species %in% more_than_one_genome_observed_for_species$species) %>% # filter to species with more than one genome observed
-    dplyr::group_by(query_name, species) %>%
-    dplyr::summarise(min_average_abund = min(average_abund),
-                     max_average_abund = max(average_abund)) %>%
-    dplyr::mutate(range_average_abund = max_average_abund - min_average_abund)
+  # average_abund <- taxonomy_annotate_df %>%
+  #   dplyr::filter(.data$species %in% more_than_one_genome_observed_for_species$species) %>% # filter to species with more than one genome observed
+  #   dplyr::group_by(query_name, species) %>%
+  #   dplyr::summarise(min_average_abund = min(average_abund),
+  #                    max_average_abund = max(average_abund),
+  #                    sd_average_abund = sd(average_abund)) %>%
+  #   dplyr::mutate(range_average_abund = max_average_abund - min_average_abund)
 
-  average_abund_filtered <- average_abund %>%
-    dplyr::filter(range_average_abund >= 10)
+  #average_abund_filtered <- average_abund %>%
+  #  dplyr::filter(range_average_abund >= 10)
 
-  # CHECK IF THERE IS NOTHING TO FILTER WTIH AND PLOT, AND EXIT WITH HELPFUL MESSAGE ABOUT THAT
+  # CHECK IF THERE IS NOTHING TO FILTER WITH AND PLOT, AND EXIT WITH HELPFUL MESSAGE ABOUT THAT
+  # the below code won't work, but I think this logic could be used to draw delineations to count the number of strains.
+  # I'm not totally sure yet how to get this logic to work with facet_wrap() to show colors --
+  # probably something like calculating it in a different data frame and then joining it to the df that's plotted.
+  # I would probably make a column like "strain" where I would label each dot "strain1", "strain2", etc. based on which intervals in the sd that the abundance falls in.
+  # seq(average_abund$min_average_abund, average_abund$max_average_abund, by = average_abund$sd_average_abund)
+
+  # I think I could also use logic to label potential prophages -- something like less than 3% of the genome with >100 more abundant than any other match for that species.
+  # I need to validate this first though, potentially using SRR492184 Enterococcus faecalis.
+  # Genome-grist on this sample would probably be the easiest thing to do.
+
+  # plot_df <- taxonomy_annotate_df %>%
+  #   dplyr::mutate(query_name_species = paste0(.data$query_name, "-", .data$species)) %>%
+  #   dplyr::filter(.data$query_name_species %in% f_match_filtered$query_name_species)
+  #
+  # # label with strain count guesses before plotting
+  # for(query_name_species in unique(plot_df$query_name_species)){
+  #   print(query_name_species)
+  # }
 
   # filter to the species that meet the criteria
   ggplot2::ggplot(taxonomy_annotate_df %>%
                     dplyr::mutate(query_name_species = paste0(.data$query_name, "-", .data$species)) %>%
-                    #dplyr::filter(.data$species %in% average_abund_filtered$species) %>%
                     dplyr::filter(.data$query_name_species %in% f_match_filtered$query_name_species),
                   ggplot2::aes(x = stats::reorder(genome_accession, -f_match),
                                y = average_abund,
