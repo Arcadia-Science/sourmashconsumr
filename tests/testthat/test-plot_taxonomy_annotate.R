@@ -101,3 +101,20 @@ test_that("plot_taxonomy_annotate_ts_alluvial returns a plot", {
   expect_equal(class(alluvial_plt)[2], "ggplot")
   expect_equal(length(alluvial_plt$layers), 2)
 })
+
+# multi strain detection --------------------------------------------------------
+
+test_that("from_taxonomy_annotate_to_multi_strains() returns a plot", {
+  taxonomy_annotate_df <- read_taxonomy_annotate(Sys.glob("SRR19*lineage*.csv"), separate_lineage = T)
+  lst <- from_taxonomy_annotate_to_multi_strains(taxonomy_annotate_df = taxonomy_annotate_df)
+  # the mapping should be to f_match if plotting worked
+  expect_equal(c("$", ".data", "f_match"), as.character(rlang::quo_get_expr(lst$plt$layers[[1]]$mapping$size)))
+  # only one query (SRR19888434) and one species (Brevibacterium aurantiacum) have an f_match over 1.1
+  expect_equal(1, nrow(lst$candidate_species_with_multiple_strains))
+  # there were six genomes detected
+  expect_equal(6, nrow(lst$plt_data))
+  # test that the stop message is returned when there are no f_match results
+  taxonomy_annotate_df <- read_taxonomy_annotate(Sys.glob("SRR19888427*lineage*.csv"), separate_lineage = T)
+  lst <- from_taxonomy_annotate_to_multi_strains(taxonomy_annotate_df = taxonomy_annotate_df)
+  expect_equal(0, nrow(lst$candidate_species_with_multiple_strains))
+})

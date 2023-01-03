@@ -20,6 +20,6 @@ A data frame with 6 rows and 7 columns:
 gut_compare_df
 }
 \description{
-A similarlity matrix between six stool microbiome shotgun metagenome samples.
+A similarity matrix between six stool microbiome shotgun metagenome samples.
 }
 \keyword{datasets}
