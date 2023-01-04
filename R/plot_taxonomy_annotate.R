@@ -473,7 +473,8 @@ from_taxonomy_annotate_to_multi_strains <- function(taxonomy_annotate_df, plot_t
     dplyr::mutate(query_name_species = paste0(.data$query_name, "-", .data$species)) %>%
     dplyr::filter(.data$query_name_species %in% f_match_filtered$query_name_species) %>%
     # for plotting only, filter to genomes that have an f_match of plot_threshold or greater
-    dplyr::filter(.data$f_match >= plot_threshold)
+    dplyr::filter(.data$f_match >= plot_threshold) %>%
+    dplyr::mutate(species = paste0("italic('", .data$species, "')"))
 
   # produce a plot
   plt <- ggplot2::ggplot(plt_df, ggplot2::aes(x = stats::reorder(.data$genome_accession, -.data$f_match),
@@ -481,11 +482,14 @@ from_taxonomy_annotate_to_multi_strains <- function(taxonomy_annotate_df, plot_t
                                               label = round(.data$f_match, digits = 2))) +
     ggplot2::geom_point(ggplot2::aes(size = .data$f_match)) +
     ggplot2::coord_flip() +
-    ggplot2::facet_wrap(~.data$query_name + .data$species, scales = "free") +
+    ggplot2::facet_wrap(~.data$query_name + .data$species, scales = "free",
+                        labeller = ggplot2::label_parsed) +
     ggrepel::geom_text_repel(size = 2, color = "grey") +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_classic() +
+    ggplot2::theme(strip.background = ggplot2::element_blank()) +
     ggplot2::labs(y = "average abundance of k-mers in genome",
-                  x = "genome accession")
+                  x = "genome",
+                  size = "fraction of genome")
 
   # return a list with plot and summaries
   return(list(candidate_species_with_multiple_strains = f_match_filtered,
