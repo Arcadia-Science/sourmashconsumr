@@ -173,6 +173,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #'
 #' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
 #' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.
+#' @param palette An optional character vector specifying the color palette to use. Ignored if fill is not set. Defaults to the colors in RColorBrewer Set2.
 #'
 #' @return A ComplexUpset plot
 #' @export
@@ -183,7 +184,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' \dontrun{
 #' plot_taxonomy_annotate_upset()
 #' }
-plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
+plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NULL){
   upset_df <- upset_inputs[[1]]
   taxonomy_annotate_df <- upset_inputs[[2]]
   tax_glom_level <- upset_inputs[[3]]
@@ -204,13 +205,19 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL){
       dplyr::left_join(taxonomy_annotate_df, by = "lineage") %>%
       tibble::column_to_rownames("lineage")
 
+    # create a palette if not user specified
+    if(is.null(palette)){
+      # if the user doesn't supply a palette, use Set2
+      palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
+    }
+
     # plot the upset plot
     plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                                base_annotations=list(
                                  '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                               text_colors=c(on_background='black', on_bar='black'),
                                                                               mapping=ggplot2::aes(fill = .data$fill)) +
-                                   ggplot2::scale_fill_brewer(palette = "Set2") +
+                                   ggplot2::scale_fill_manual(values = palette) +
                                    ggplot2::labs(fill = fill))
     )
     return(plt)
