@@ -4,7 +4,12 @@
 \alias{plot_gather_upset}
 \title{Visualize the intersection of genome accessions in sourmash gather results from many samples}
 \usage{
-plot_gather_upset(upset_df, color_by_database = FALSE, gather_df = NULL)
+plot_gather_upset(
+  upset_df,
+  color_by_database = FALSE,
+  gather_df = NULL,
+  palette = NULL
+)
 }
 \arguments{
 \item{upset_df}{An upset plot compliant data frame like that produced by from_gather_to_upset_df.}
@@ -12,6 +17,8 @@ plot_gather_upset(upset_df, color_by_database = FALSE, gather_df = NULL)
 \item{color_by_database}{Boolean indicating whether to fill the upset plot instersection bar plot by the database the results came from. FALSE by default.}
 
 \item{gather_df}{Gather results passed to from_gather_to_upset_df to create the input data frame. NULL unless color_by_database is set to TRUE.}
+
+\item{palette}{Optional argument specifying the palette to use. Ignored unless color_by_database is set to TRUE. Defaults to RColorBrewer Set2 if color_by_database is set to TRUE and palette is not specified.}
 }
 \value{
 A ComplexUpset plot.
