@@ -131,13 +131,15 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' plot_signatures_upset()
 #' }
 plot_signatures_upset <- function(upset_df){
-  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df),
-                                   themes=list(default=ggplot2::theme_classic()), set_sizes = F,
+  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
                                      '# scaled k-mers'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                        text_colors=c(on_background='black', on_bar='black'),
                                                                                        mapping=ggplot2::aes(fill='bars_color')) +
-                                       ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none'))
+                                       ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none') +
+                                       ggplot2::theme_classic() +
+                                       ggplot2::theme(axis.text.x = ggplot2::element_blank(),
+                                                      axis.ticks.x = ggplot2::element_blank()))
   )
   return(upset_plt)
 }

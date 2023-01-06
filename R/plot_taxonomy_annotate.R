@@ -212,24 +212,28 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
     }
 
     # plot the upset plot
-    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name),
-                               themes=list(default=ggplot2::theme_classic()), set_sizes = F,
+    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                                base_annotations=list(
                                  '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                               text_colors=c(on_background='black', on_bar='black'),
                                                                               mapping=ggplot2::aes(fill = .data$fill)) +
                                    ggplot2::scale_fill_manual(values = palette) +
-                                   ggplot2::labs(fill = fill))
+                                   ggplot2::labs(fill = fill) +
+                                   ggplot2::theme_classic() +
+                                   ggplot2::theme(axis.text.x = ggplot2::element_blank(),
+                                                  axis.ticks.x = ggplot2::element_blank()))
     )
     return(plt)
   }
 
   # plot the upset plot
-  plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name),
-                             themes=list(default=ggplot2::theme_classic()), set_sizes = F,
+  plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                                                            text_colors=c(on_background='black', on_bar='black'))
+                                                                            text_colors=c(on_background='black', on_bar='black')) +
+                                 ggplot2::theme_classic() +
+                                 ggplot2::theme(axis.text.x = ggplot2::element_blank(),
+                                                axis.ticks.x = ggplot2::element_blank())
   ))
   return(plt)
 }
