@@ -3,7 +3,7 @@
 
 test_that("read compare breaks with a helpful error message when given an nonexistent file path", {
   # one file
-  expect_error(read_gather(file = "tmp.csv"), regexp = "File does not exist")
+  expect_error(expect_message(read_compare_csv(file = "tmp.csv"), regexp = "File does not exist"), regexp = "Could not resolve host")
 })
 
 test_that("check read_compare_csv is symmetric", {
@@ -26,9 +26,12 @@ test_that("check that column names are the same as rownames for read_compare_csv
 
 test_that("read tax annotate breaks with a helpful error message when given an nonexistent file path", {
   # one file
-  expect_error(read_taxonomy_annotate(file = "tmp.csv"), regexp = "File does not exist")
+  expect_error(expect_message(read_taxonomy_annotate(file = "tmp.csv"), regexp = "File does not exist"), regexp = "Could not resolve host")
+  fake_url <- "https://raw.githubusercontent.com/Arcadia-Science/sourmashconsumr/main/tests/testthat/SRR.csv"
+  expect_error(expect_message(read_taxonomy_annotate(file = fake_url), regexp = "Checking as url"),
+               regexp = "Neither file path nor url are valid.")
   # multiple files
-  expect_error(read_taxonomy_annotate(file = c("tmp1.csv", "tmp2.csv")), regexp = "Not all files exist")
+  expect_error(expect_message(read_taxonomy_annotate(file = c("tmp1.csv", "tmp2.csv")), regexp = "File does not exist"), regexp = "Could not resolve host")
 })
 
 test_that("check that read_taxonomy_annotate reads single files genbank db", {
@@ -55,7 +58,10 @@ test_that("check that read_taxonomy_annotate reads many files gtdb reps db", {
 # test read_signature -----------------------------------------------------
 
 test_that("read signature breaks with a helpful error message when given an nonexistent file path", {
-  expect_error(read_signature(file = "tmp.sig"), regexp = "File does not exist")
+  expect_error(expect_message(read_signature(file = "tmp.sig"), regexp = "File does not exist"), regexp = "Could not resolve host")
+  fake_url <- "https://raw.githubusercontent.com/Arcadia-Science/sourmashconsumr/main/tests/testthat/SRR18071810.sip"
+  expect_error(expect_message(read_signature(file = fake_url), regexp = "Checking as url"),
+               regexp = "Neither file path nor url are valid.")
 })
 
 test_that("read signature works with a signature with only one ksize", {
@@ -108,9 +114,12 @@ test_that("read_signature can read many signatures at once", {
 
 test_that("read gather breaks with a helpful error message when given an nonexistent file path", {
   # one file
-  expect_error(read_gather(file = "tmp.csv"), regexp = "File does not exist")
+  expect_error(expect_message(read_gather(file = "tmp.csv"), regexp = "File does not exist"), regexp = "Could not resolve host")
+  fake_url <- "https://raw.githubusercontent.com/Arcadia-Science/sourmashconsumr/main/tests/testthat/SRR.csv"
+  expect_error(expect_message(read_gather(file = fake_url), regexp = "Checking as url"),
+               regexp = "Neither file path nor url are valid.")
   # multiple files
-  expect_error(read_gather(file = c("tmp1.csv", "tmp2.csv")), regexp = "Not all files exist")
+  expect_error(expect_message(read_gather(file = c("tmp1.csv", "tmp2.csv")), regexp = "File does not exist"), regexp = "Could not resolve host")
 })
 
 test_that("read_gather works with outputs from different versions of sourmash", {
