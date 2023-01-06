@@ -144,7 +144,8 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
       dplyr::left_join(db_df, by = "genome_accession") %>%
       tibble::column_to_rownames("genome_accession")
 
-    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
+    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)],
+                                     themes=list(default=ggplot2::theme_classic()), set_sizes = F,
                                      base_annotations = list(
                                        '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                       text_colors=c(on_background='black', on_bar='black'),
