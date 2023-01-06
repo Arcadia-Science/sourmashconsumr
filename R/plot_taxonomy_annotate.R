@@ -371,16 +371,26 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
     dplyr::summarize(f_unique_weighted = sum(.data$f_unique_weighted))
 
+  # create a vector to use to reorder the legend so that "other" is always last
+  if("other" %in% alluvium_df$tax_glom_col){
+    order_vector <- alluvium_df %>%
+      dplyr::filter(.data$tax_glom_col != "other")
+    order_vector <- c(unique(order_vector$tax_glom_col), "other")
+  } else {
+    order_vector <- unique(alluvium_df$tax_glom_col)
+  }
+
   alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
                                                   y = .data$f_unique_weighted,
                                                   alluvium = .data$tax_glom_col,
                                                   label    = .data$tax_glom_col,
                                                   fill     = .data$tax_glom_col)) +
     ggalluvial::geom_alluvium(colour = "black", alpha = .4, decreasing = FALSE) +
-    ggplot2::labs(x = "Time", y = "Fraction of metagenome", colour = "", fill = tax_glom_level) +
+    ggplot2::labs(x = "time", y = "abundance-weighted\nfraction of query", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005)
+    ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005) +
+    ggplot2::scale_fill_discrete(breaks = order_vector)
 
   return(alluvial_plt)
 }
