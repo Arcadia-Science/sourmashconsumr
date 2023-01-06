@@ -14,6 +14,9 @@
 #' read_compare_csv("")
 #' }
 read_compare_csv <- function(file, sample_to_rownames = F, ...){
+  if(!file.exists(file)){
+    stop("File does not exist. Please provide a valid file path and retry.")
+  }
   compare_df <- readr::read_csv(file, ...)
   colnames_compare_df <- colnames(compare_df)
   if(sample_to_rownames == F){
@@ -107,6 +110,9 @@ read_gather <- function(file, intersect_bp_threshold = 0, ...){
                                   sum_weighted_found = readr::col_double(),
                                   total_weighted_hashes = readr::col_double())
   if(length(file) > 1){
+    if(!all(file.exists(file))){
+      stop("Not all files exist. Please provide valid file paths and retry. The Sys.glob() function might help you specify your file paths.")
+    }
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     # allow the function to read multiple files at once
@@ -116,6 +122,9 @@ read_gather <- function(file, intersect_bp_threshold = 0, ...){
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
                         warning = warning_handler)
   } else if(length(file) == 1){
+    if(!file.exists(file)){
+      stop("File does not exist. Please provide a valid file path and retry.")
+    }
     withCallingHandlers(gather_df <- readr::read_csv(file, col_types = gather_col_types, ...) %>%
                           dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
@@ -188,6 +197,9 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 0, separate_li
                                              lineage = readr::col_character())
 
   if(length(file) > 1){
+    if(!all(file.exists(file))){
+      stop("Not all files exist. Please provide valid file paths and retry. The Sys.glob() function might help you specify your file paths.")
+    }
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     # allow the function to read multiple files at once
@@ -198,6 +210,9 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 0, separate_li
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
                         warning = warning_handler)
   } else if(length(file) == 1){
+    if(!file.exists(file)){
+      stop("File does not exist. Please provide a valid file path and retry.")
+    }
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     withCallingHandlers(taxonomy_annotate_df <- readr::read_csv(file, col_types = taxonomy_annotate_col_types, ...) %>%
@@ -247,7 +262,11 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #' read_signature("tests/testthat/SRR18071810.sig")
 #' }
 read_signature_one <- function(file, compliant = TRUE){
-  stopifnot(file.exists(file)) # stop if the file doesn't exist
+  if(!file.exists(file)){
+    stop("File does not exist. Please provide a valid file path and retry.
+         If you are trying to pass multiple files to the read_signature() function, the Sys.glob() function might help you specify your file paths.")
+  }
+
   # read in the signature json file to a data frame and calculate the scaled value
   sig_df <- jsonlite::fromJSON(file) %>%
     tidyr::unnest(tidyselect::one_of("signatures")) %>%

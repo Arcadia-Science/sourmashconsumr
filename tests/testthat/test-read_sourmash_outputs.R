@@ -1,6 +1,11 @@
 
 # test read_compare_csv --------------------------------------------------------
 
+test_that("read compare breaks with a helpful error message when given an nonexistent file path", {
+  # one file
+  expect_error(read_gather(file = "tmp.csv"), regexp = "File does not exist")
+})
+
 test_that("check read_compare_csv is symmetric", {
   df = read_compare_csv("comp_k31.csv", sample_to_rownames = T)
   expect_equal(ncol(df), nrow(df))
@@ -18,6 +23,13 @@ test_that("check that column names are the same as rownames for read_compare_csv
 
 
 # test read_taxonomy_annotate ---------------------------------------------
+
+test_that("read tax annotate breaks with a helpful error message when given an nonexistent file path", {
+  # one file
+  expect_error(read_taxonomy_annotate(file = "tmp.csv"), regexp = "File does not exist")
+  # multiple files
+  expect_error(read_taxonomy_annotate(file = c("tmp1.csv", "tmp2.csv")), regexp = "Not all files exist")
+})
 
 test_that("check that read_taxonomy_annotate reads single files genbank db", {
  df_many <- read_taxonomy_annotate(Sys.glob("*genbank*lineages-head*.csv"))
@@ -41,6 +53,10 @@ test_that("check that read_taxonomy_annotate reads many files gtdb reps db", {
 
 
 # test read_signature -----------------------------------------------------
+
+test_that("read signature breaks with a helpful error message when given an nonexistent file path", {
+  expect_error(read_signature(file = "tmp.sig"), regexp = "File does not exist")
+})
 
 test_that("read signature works with a signature with only one ksize", {
   # This signature is k=21,abund
@@ -89,6 +105,13 @@ test_that("read_signature can read many signatures at once", {
 
 
 # sourmash gather ---------------------------------------------------------
+
+test_that("read gather breaks with a helpful error message when given an nonexistent file path", {
+  # one file
+  expect_error(read_gather(file = "tmp.csv"), regexp = "File does not exist")
+  # multiple files
+  expect_error(read_gather(file = c("tmp1.csv", "tmp2.csv")), regexp = "Not all files exist")
+})
 
 test_that("read_gather works with outputs from different versions of sourmash", {
   gather_files <- Sys.glob("*gather.csv")
