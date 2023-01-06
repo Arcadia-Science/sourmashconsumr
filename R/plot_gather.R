@@ -116,7 +116,8 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
                                        ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none') +
                                        ggplot2::theme_classic() +
                                        ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                      axis.ticks.x = ggplot2::element_blank()))
+                                                      axis.ticks.x = ggplot2::element_blank(),
+                                                      axis.title.x = ggplot2::element_blank()))
   )
   }
   if(color_by_database == T){
@@ -162,7 +163,8 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
                                          ggplot2::scale_fill_manual(values = palette) +
                                          ggplot2::theme_classic() +
                                          ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                        axis.ticks.x = ggplot2::element_blank()))
+                                                        axis.ticks.x = ggplot2::element_blank(),
+                                                        axis.title.x = ggplot2::element_blank()))
     )
   }
   return(upset_plt)

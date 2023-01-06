@@ -139,7 +139,8 @@ plot_signatures_upset <- function(upset_df){
                                        ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none') +
                                        ggplot2::theme_classic() +
                                        ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                      axis.ticks.x = ggplot2::element_blank()))
+                                                      axis.ticks.x = ggplot2::element_blank(),
+                                                      axis.title.x = ggplot2::element_blank()))
   )
   return(upset_plt)
 }

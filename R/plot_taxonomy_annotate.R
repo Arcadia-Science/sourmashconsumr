@@ -221,7 +221,8 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
                                    ggplot2::labs(fill = fill) +
                                    ggplot2::theme_classic() +
                                    ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                  axis.ticks.x = ggplot2::element_blank()))
+                                                  axis.ticks.x = ggplot2::element_blank(),
+                                                  axis.title.x = ggplot2::element_blank()))
     )
     return(plt)
   }
@@ -233,7 +234,8 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
                                                                             text_colors=c(on_background='black', on_bar='black')) +
                                  ggplot2::theme_classic() +
                                  ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                axis.ticks.x = ggplot2::element_blank())
+                                                axis.ticks.x = ggplot2::element_blank(),
+                                                axis.title.x = ggplot2::element_blank())
   ))
   return(plt)
 }
