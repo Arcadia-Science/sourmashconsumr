@@ -3,16 +3,18 @@
 #' @param file File path or URL
 #'
 #' @return NULL
-#'
-#' @examples
 check_file_and_url_one <- function(file){
   # check if file or URL are valid, and if not, print helpful messages and errors.
-  if(!file.exists(file)){
-    message("File does not exist locally. Checking as url. If you did not pass a url, please provide a valid file path and retry. The Sys.glob() function might help if you're specifying multiple file paths.")
-    if(httr::HEAD(file)$status != 200) {
-      stop("Neither file path nor url are valid.")
-    }
+  if (file.exists(file)) {
+    return(NULL)
   }
+
+  message("File does not exist locally. Checking as url. If you did not pass a url, please provide a valid file path and retry. The Sys.glob() function might help if you're specifying multiple file paths.")
+  if(httr::HEAD(file)$status == 200) {
+    return(NULL)
+  }
+
+  stop("Neither file path nor url are valid.")
 }
 
 #' Read a CSV file output by sourmash compare
