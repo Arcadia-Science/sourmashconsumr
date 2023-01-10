@@ -1,3 +1,22 @@
+#' Check if local file path or URL are valid
+#'
+#' @param file File path or URL
+#'
+#' @return NULL
+check_file_and_url_one <- function(file){
+  # check if file or URL are valid, and if not, print helpful messages and errors.
+  if (file.exists(file)) {
+    return(NULL)
+  }
+
+  message("File does not exist locally. Checking as url. If you did not pass a url, please provide a valid file path and retry. The Sys.glob() function might help if you're specifying multiple file paths.")
+  if(httr::HEAD(file)$status == 200) {
+    return(NULL)
+  }
+
+  stop("Neither file path nor url are valid.")
+}
+
 #' Read a CSV file output by sourmash compare
 #'
 #' @param file path to file output by sourmash compare using the with the --csv flag
@@ -14,6 +33,9 @@
 #' read_compare_csv("")
 #' }
 read_compare_csv <- function(file, sample_to_rownames = F, ...){
+  # check if file or URL are valid, and if not, print helpful messages and errors.
+  check_file_and_url_one(file)
+
   compare_df <- readr::read_csv(file, ...)
   colnames_compare_df <- colnames(compare_df)
   if(sample_to_rownames == F){
@@ -107,6 +129,10 @@ read_gather <- function(file, intersect_bp_threshold = 0, ...){
                                   sum_weighted_found = readr::col_double(),
                                   total_weighted_hashes = readr::col_double())
   if(length(file) > 1){
+    # check if file or URL are valid, and if not, print helpful messages and errors.
+    # tmp var will catch null assignment.
+    tmp <- sapply(X = file, FUN = function(x) check_file_and_url_one(x))
+
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     # allow the function to read multiple files at once
@@ -116,6 +142,9 @@ read_gather <- function(file, intersect_bp_threshold = 0, ...){
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
                         warning = warning_handler)
   } else if(length(file) == 1){
+    # check if file or URL are valid, and if not, print helpful messages and errors.
+    check_file_and_url_one(file)
+
     withCallingHandlers(gather_df <- readr::read_csv(file, col_types = gather_col_types, ...) %>%
                           dplyr::filter(.data$intersect_bp >= intersect_bp_threshold) %>%
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
@@ -188,6 +217,10 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 0, separate_li
                                              lineage = readr::col_character())
 
   if(length(file) > 1){
+    # check if file or URL are valid, and if not, print helpful messages and errors.
+    # tmp var will catch null assignment
+    tmp <- sapply(X = file, FUN = function(x) check_file_and_url_one(x))
+
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     # allow the function to read multiple files at once
@@ -198,6 +231,9 @@ read_taxonomy_annotate <- function(file, intersect_bp_threshold = 0, separate_li
                           dplyr::mutate(genome_accession = gsub(" .*", "", .data$name) , .after = "name"),
                         warning = warning_handler)
   } else if(length(file) == 1){
+    # check if file or URL are valid, and if not, print helpful messages and errors.
+    check_file_and_url_one(file)
+
     # withCallingHandlers catches the specific warnings we want to ignore and doesn't emit them
     # the only warning we want to ignore will start with: "The following named parsers don't match the column names:"
     withCallingHandlers(taxonomy_annotate_df <- readr::read_csv(file, col_types = taxonomy_annotate_col_types, ...) %>%
@@ -247,7 +283,9 @@ get_scaled_for_max_hash <- function(sig_max_hash){
 #' read_signature("tests/testthat/SRR18071810.sig")
 #' }
 read_signature_one <- function(file, compliant = TRUE){
-  stopifnot(file.exists(file)) # stop if the file doesn't exist
+  # check if file or URL are valid, and if not, print helpful messages and errors.
+  check_file_and_url_one(file)
+
   # read in the signature json file to a data frame and calculate the scaled value
   sig_df <- jsonlite::fromJSON(file) %>%
     tidyr::unnest(tidyselect::one_of("signatures")) %>%
