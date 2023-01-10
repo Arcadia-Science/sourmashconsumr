@@ -300,7 +300,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
                    axis.ticks.y = ggplot2::element_blank(),
                    axis.ticks.x = ggplot2::element_blank(),
                    legend.position = "None") +
-    ggplot2::labs(x = "tanomic rank") +
+    ggplot2::labs(x = "taxonomic rank") +
     # buffer the last axis so full names have space to print to viz
     ggplot2::scale_x_continuous(labels = c(agglom_cols, ""),
                                 breaks = 1:(length(agglom_cols) + 1),
