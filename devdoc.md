@@ -1,7 +1,7 @@
 # Developer documentation
 
 The sourmashconsumr package follows package developer conventions laid out in [https://r-pkgs.org/](https://r-pkgs.org/).
-It uses this GitHub repository, the software for R and RStudio, and the R packages devtools, testthat, and usethis for development. 
+It uses this GitHub repository, the software for R and RStudio, and the R packages `devtools`, `testthat`, and `usethis` for development. 
 The packages in the `DESCRIPTION` file are dependencies.
 
 ## Obtaining the sourmashconsumr source code and installing package and development dependencies
