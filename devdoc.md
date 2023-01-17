@@ -80,7 +80,7 @@ Then, if you're using a Mac, you can open the sourmashconsumr Rproject by runnin
 open sourmashconsumr.Rproj
 ```
 
-On a linux or windows, running `rstudio` from the activated conda environment may open RStudio (untested).
+On a Linux or Windows machine, running `rstudio` from the activated conda environment may open RStudio (untested).
 
 ```
 rstudio
