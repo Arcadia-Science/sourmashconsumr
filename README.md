@@ -82,6 +82,13 @@ the function operates on:
   - `from_upset_df_to_intersection_summary()`
   - `from_upset_df_to_intersections()`
 
+## Developer documentation
+
+The sourmashconsumr package follows package developer conventions laid
+out in <https://r-pkgs.org/>, and changes can be contributed to the code
+base using pull requests. For more information on how to contribute, see
+the [developer documentation](devdoc.md).
+
 ## Citation
 
 sourmashconsumr doesn’t have a citation yet, but sourmash does! If you

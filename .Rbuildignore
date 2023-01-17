@@ -4,3 +4,5 @@
 ^README\.Rmd$
 ^\.github$
 ^data-raw$
+^devdoc\.md$
+^devenv\.yml$
