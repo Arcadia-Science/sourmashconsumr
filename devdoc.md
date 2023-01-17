@@ -1,14 +1,14 @@
 # Developer documentation
 
-The sourmashconsumr package follows package developer conventions laid out in https://r-pkgs.org/.
-It uses this github repository, the software for R and RStudio, and the R packages devtools, testthat, and usethis for development. 
+The sourmashconsumr package follows package developer conventions laid out in [https://r-pkgs.org/](https://r-pkgs.org/).
+It uses this GitHub repository, the software for R and RStudio, and the R packages devtools, testthat, and usethis for development. 
 The packages in the `DESCRIPTION` file are dependencies.
 
 ## Obtaining the sourmashconsumr source code and installing package and development dependencies
 
 ### Obtaining the source code
 
-+ Developers who are not members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: fork the repo to your own github user account. Clone the repository locally.
++ Developers who are not members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: fork the repo to your own GitHub user account. Clone the repository locally.
 + Developers who are members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: clone the repository and create a branch.
 Clone the repository locally using `git clone`.
 
@@ -20,7 +20,7 @@ Make sure you have R and RStudio installed (see [here](https://rstudio-education
 
 ### Opening the sourmashconsumr R project
 
-You'll then need to open the R project for the sourmashconsumer project. 
+You'll then need to open the R project for the `sourmashconsumr` project. 
 You can do this by double clicking the `sourmashconsumr.Rproj` file in your file finder or by using `File` -> `Open Project...` and then finding and opening the `sourmashconsumr.Rproj` file.
 
 ### Installing development dependencies
@@ -42,7 +42,7 @@ The sourmashconsumr package has a lot of dependencies as it tries to make the ou
 
 #### Installing package dependencies using R functions
 
-Installing the sourmashconsumr package from github will trigger missing dependencies to be installed.
+Installing the sourmashconsumr package from GitHub will trigger missing dependencies to be installed.
 
 ```
 install.packages("devtools")
@@ -74,7 +74,7 @@ conda activate sourmashconsumr
 ```
 
 You will still need to install RStudio after creating the conda environment. 
-Then, if you're using a mac computer, you can open the sourmashconsumr Rproject by running `open sourmashconsumr.Rproj` from the activated environment you just created.
+Then, if you're using a Mac, you can open the sourmashconsumr Rproject by running `open sourmashconsumr.Rproj` from the activated environment you just created.
 
 ```
 open sourmashconsumr.Rproj
@@ -89,7 +89,7 @@ rstudio
 ## Developing 
 
 sourmashconsumr is developed on GitHub at [Arcadia-Science/sourmashconsumr](https://github.com/Arcadia-Science/sourmashconsumr/).
-Changes can be contributed to sourmashconsumr via [Pull Request](https://github.com/Arcadia-Science/sourmashconsumr/pulls).
+Changes can be contributed to sourmashconsumr via [pull requests](https://github.com/Arcadia-Science/sourmashconsumr/pulls).
 
 ### Getting started
 
