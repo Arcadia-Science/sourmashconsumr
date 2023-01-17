@@ -462,6 +462,16 @@ plot_gather_upset(upset_df = gut_gather_upset_df,
                   gather_df = gut_gather_df)
 ```
 
+You can change the palette by passing a character vector of colors to the `palette` argument.
+If no palette is specified, it defaults to RColorBrewer's Set2.
+
+```{r, fig.width = 11}
+plot_gather_upset(upset_df = gut_gather_upset_df, 
+                  color_by_database = T, 
+                  gather_df = gut_gather_df,
+                  palette = "red")
+```
+
 ## Working with the CSV output of sourmash taxonomy annotate
 
 Sourmash taxonomy makes the sourmash gather output more interpretable by adding taxonomic labels to the sourmash gather results. 
@@ -503,6 +513,16 @@ plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs,
 
 If fill is specified, the bar plot on the upper portion of the upset plot will be colored by the taxonomic level indicated.
 The level must be at or above that used in `from_taxonomy_annotate_to_upset_inputs()`.
+
+You can change the palette by passing a character vector of colors to the `palette` argument.
+If no palette is specified, it defaults to RColorBrewer's Set2.
+
+```{r, fig.width=6, fig.height = 4}
+plot_taxonomy_annotate_upset(upset_inputs = gut_taxonomy_upset_inputs, 
+                             fill = "phylum",
+                             palette = c("#999999", "#E69F00", "#56B4E9", "#009E73",
+                                         "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+```
 
 Since upset plots are based on the presence or absence of lineages, the counts in the upset barplot do not reflect the total number of lineages observed at a given taxonomic level, but rather how many lineages are shared between samples at that level -- e.g., the numbers are not weighted.
 
