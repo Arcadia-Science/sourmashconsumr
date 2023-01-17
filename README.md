@@ -87,7 +87,7 @@ the function operates on:
 The sourmashconsumr package follows package developer conventions laid
 out in <https://r-pkgs.org/>, and changes can be contributed to the code
 base using pull requests. For more information on how to contribute, see
-the [Developer Documentation](devdoc.md).
+the [developer documentation](devdoc.md).
 
 ## Citation
 
