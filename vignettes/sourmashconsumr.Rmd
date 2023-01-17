@@ -55,6 +55,40 @@ We provide a brief description of each command, but be sure to check the [sourma
 + `sourmash gather`: Compares each query sketch against all sketches in a database to identify the minimum set of sketches that contain all of the known k-mers in the query. Typically, `sourmash gather` is run on metagenomes to determine all of the genomes that are contained within the sample, however `sourmash gather` can be used to assess containment between a query and a large database of sequences (e.g. for contamination discovery).
 + `sourmash taxonomy annotate`: Assigns taxonomic lineages to the sourmash gather matches.
 
+<div class="warning" style='padding:0.1em; background-color:#F0F8FF; color:#000000'>
+<span>
+<p style='margin-top:1em; text-align:left'>
+<b>Naming signatures in sourmash to get the most out of sourmashconsumr functions</b></p>
+<p style='margin-left:1em;'>
+Many functions in the sourmashconsumr R package rely on signatures names.
+Signature names are set when you sketch a file by using the `--name` or `--merge` flags:
+
+```
+sourmash sketch dna -p k=21,k=31,k=51,scaled=1000,abund -o sample1.sig --name sample1 sample1*fastq.gz
+```
+
+The above command would create a signature with three DNA sketches (one for each k size), each with a scaled value of 1000 and abundance tracking turned on.
+The signature name would be `sample1` and it would contain sequences from all FASTQ files that start with `sample1` and end in `fastq.gz`, and it would be written to the file `sample1.sig`.
+
+The signature name would be read into R as a column, `name`, if you read the output file `sample1.sig` into R (see below).
+The signature name is also propagated to the outputs of `sourmash gather` and `sourmash taxonomy annotate`; if you read these output files into R, the signature name would be in the column `query_name`.
+
+Many of the sourmashconsumr functions use the `name` or `query_name` columns.
+If you didn't use the `--name` flag when you sketched your signatures, you have two options to create the `name`/`query_name` column:
+
+1. If you would like to add names to your sourmash signatures, you can use the sourmash command `sourmash sig rename`. This might be the best solution if you plan to work with the signatures more.
+```
+sourmash signature rename file1.sig "new name" -o renamed.sig
+```
+
+2. If you already ran `sourmash gather` on your signatures, you can instead edit this column in R or excel. For example, you could do something like this in R:
+```
+sourmashconsumr::read_gather("my_gather_results.csv") %>%
+  dplyr::mutate(query_name = basename(query_filename))
+```
+</p>
+</div>
+
 # Installation
 
 You can install the development version of sourmashconsumr from [GitHub](https://github.com/) with:
