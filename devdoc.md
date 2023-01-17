@@ -8,8 +8,8 @@ The packages in the `DESCRIPTION` file are dependencies.
 
 ### Obtaining the source code
 
-Developers who are not members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: fork the repo to your own github user account. Clone the repository locally.
-Developers who are members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: clone the repository and create a branch.
++ Developers who are not members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: fork the repo to your own github user account. Clone the repository locally.
++ Developers who are members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: clone the repository and create a branch.
 Clone the repository locally using `git clone`.
 
 See [contributing section](#contributing-changes-back-to-the-sourmashconsumr-repository) below for instructions on how to contribute code changes back to the sourmashconsumr repository.
