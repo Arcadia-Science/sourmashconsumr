@@ -12,7 +12,7 @@ Developers who are not members of the [Arcadia-Science](https://github.com/Arcad
 Developers who are members of the [Arcadia-Science](https://github.com/Arcadia-Science/) organization: clone the repository and create a branch.
 Clone the repository locally using `git clone`.
 
-See section contributing XXX below for instructions on how to contribute code changes back to the sourmashconsumr repository.
+See [contributing section](#contributing-changes-back-to-the-sourmashconsumr-repository) below for instructions on how to contribute code changes back to the sourmashconsumr repository.
 
 ### Installing R and RStudio
 
