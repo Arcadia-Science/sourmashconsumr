@@ -24,6 +24,7 @@ Imports:
     ggplot2,
     ggrepel,
     grDevices,
+    httr,
     jsonlite,
     magrittr,
     metacoder,

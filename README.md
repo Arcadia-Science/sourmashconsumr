@@ -69,6 +69,8 @@ the function operates on:
     `plot_taxonomy_annotate_upset()`
   - sankey plot: `plot_taxonomy_annotate_sankey()`
   - time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
+  - detect the presence of multiple strains of a single species in a
+    metagenome: `from_taxonomy_annotate_to_multi_strains()`
   - to metacoder: `from_taxonomy_annotate_to_metacoder()`
   - to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
 - sourmash gather csv:

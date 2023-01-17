@@ -4,12 +4,14 @@
 \alias{plot_taxonomy_annotate_upset}
 \title{Visualize an upset plot of taxonomic lineage intersections between samples}
 \usage{
-plot_taxonomy_annotate_upset(upset_inputs, fill = NULL)
+plot_taxonomy_annotate_upset(upset_inputs, fill = NULL, palette = NULL)
 }
 \arguments{
 \item{upset_inputs}{List of inputs produced by from_taxonomy_annotate_to_upset_inputs().}
 
 \item{fill}{Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.}
+
+\item{palette}{An optional character vector specifying the color palette to use. Ignored if fill is not set. Defaults to the colors in RColorBrewer Set2.}
 }
 \value{
 A ComplexUpset plot
