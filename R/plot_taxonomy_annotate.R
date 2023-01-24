@@ -174,6 +174,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
 #' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.
 #' @param palette An optional character vector specifying the color palette to use. Ignored if fill is not set. Defaults to the colors in RColorBrewer Set2.
+#' @param ... Arguments passed to ComplexUpset::upset().
 #'
 #' @return A ComplexUpset plot
 #' @export
@@ -184,7 +185,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' \dontrun{
 #' plot_taxonomy_annotate_upset()
 #' }
-plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NULL){
+plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NULL, ...){
   upset_df <- upset_inputs[[1]]
   taxonomy_annotate_df <- upset_inputs[[2]]
   tax_glom_level <- upset_inputs[[3]]
@@ -212,7 +213,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
     }
 
     # plot the upset plot
-    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
+    plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F, ...,
                                base_annotations=list(
                                  '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                               text_colors=c(on_background='black', on_bar='black'),
@@ -228,7 +229,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
   }
 
   # plot the upset plot
-  plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
+  plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F, ...,
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                             text_colors=c(on_background='black', on_bar='black')) +

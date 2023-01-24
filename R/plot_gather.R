@@ -96,6 +96,7 @@ from_gather_to_upset_df <- function(gather_df){
 #' @param color_by_database Boolean indicating whether to fill the upset plot instersection bar plot by the database the results came from. FALSE by default.
 #' @param gather_df Gather results passed to from_gather_to_upset_df to create the input data frame. NULL unless color_by_database is set to TRUE.
 #' @param palette Optional argument specifying the palette to use. Ignored unless color_by_database is set to TRUE. Defaults to RColorBrewer Set2 if color_by_database is set to TRUE and palette is not specified.
+#' @param ... Arguments passed to ComplexUpset::upset().
 #'
 #' @return A ComplexUpset plot.
 #' @export
@@ -106,9 +107,9 @@ from_gather_to_upset_df <- function(gather_df){
 #' \dontrun{
 #' plot_gather_upset(upset_df)
 #' }
-plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = NULL, palette = NULL){
+plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = NULL, palette = NULL, ...){
   if(color_by_database == F){
-  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
+  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F, ...,
                                    base_annotations=list(
                                      '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                        text_colors=c(on_background='black', on_bar='black'),
@@ -155,7 +156,7 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
       palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
     }
 
-    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
+    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F, ...,
                                      base_annotations = list(
                                        '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                       text_colors=c(on_background='black', on_bar='black'),
