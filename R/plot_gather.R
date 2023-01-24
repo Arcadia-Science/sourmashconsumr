@@ -109,17 +109,17 @@ from_gather_to_upset_df <- function(gather_df){
 #' }
 plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = NULL, palette = NULL, ...){
   if(color_by_database == F){
-  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F, ...,
+  upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
                                      '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                        text_colors=c(on_background='black', on_bar='black'),
                                                                                        mapping=ggplot2::aes(fill='bars_color')) +
                                        ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none') +
-                                       ggplot2::theme_classic() +
-                                       ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                      axis.ticks.x = ggplot2::element_blank(),
-                                                      axis.title.x = ggplot2::element_blank()))
-  )
+                                       ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                                                      panel.grid.major = ggplot2::element_blank(),
+                                                      panel.grid.minor = ggplot2::element_blank(),
+                                                      axis.line      = ggplot2::element_line(colour = "black", linewidth = ggplot2::rel(1)))),
+                                   ...)
   }
   if(color_by_database == T){
     # make sure gather_df is not NULL
@@ -156,17 +156,17 @@ plot_gather_upset <- function(upset_df, color_by_database = FALSE, gather_df = N
       palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
     }
 
-    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F, ...,
+    upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df)[1:(ncol(upset_df)-1)], set_sizes = F,
                                      base_annotations = list(
                                        '# genomes' = ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                       text_colors=c(on_background='black', on_bar='black'),
                                                                                       mapping=ggplot2::aes(fill = .data$database)) +
                                          ggplot2::scale_fill_manual(values = palette) +
-                                         ggplot2::theme_classic() +
-                                         ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                        axis.ticks.x = ggplot2::element_blank(),
-                                                        axis.title.x = ggplot2::element_blank()))
-    )
+                                         ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                                                        panel.grid.major = ggplot2::element_blank(),
+                                                        panel.grid.minor = ggplot2::element_blank(),
+                                                        axis.line        = ggplot2::element_line(colour = "black", linewidth = ggplot2::rel(1)))),
+                                     ...)
   }
   return(upset_plt)
 }
