@@ -254,6 +254,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. If specified, agglomeration occurs across all queries.
 #' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
 #' @param palette Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.
+#' @param label Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggforce::geom_parallel_sets_labels()` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.
 #'
 #' @return A ggplot2 plot
 #' @export
@@ -264,7 +265,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
 #' \dontrun{
 #' plot_taxonomy_annotate_sankey()
 #' }
-plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL){
+plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL, label = TRUE){
   if(!is.null(tax_glom_level)){
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
   } else {
@@ -294,7 +295,6 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
   sankey_plt <- ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
     ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +
     ggforce::geom_parallel_sets_axes(axis.width = 0.2, ggplot2::aes(fill = .data$y)) +
-    ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25) +
     ggplot2::theme_classic() +
     ggplot2::theme(axis.line.y = ggplot2::element_blank(),
                    axis.text.y = ggplot2::element_blank(),
@@ -307,6 +307,11 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
                                 breaks = 1:(length(agglom_cols) + 1),
                                 limits = c(.75, length(agglom_cols) + 1)) +
     ggplot2::scale_fill_manual(values = palette)
+
+  if(label == TRUE){
+    sankey_plt <- sankey_plt +
+      ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25)
+  }
 
   return(sankey_plt)
 }
@@ -330,6 +335,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' @param fraction_threshold A number between 0-1. Defaults to 0.01.
 #' The minimum fraction that a taxonomic lineage needs to occur in at least one time series sample for that lineage to have an alluvial ribbon in the final plot.
 #' Lineages that occur below this threshold are grouped into an "other" category.
+#' @param label Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggalluvial::stat_alluvium(geom = "text")` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.
 #'
 #' @return A ggplot2 plot
 #' @export
@@ -340,7 +346,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' \dontrun{
 #' plot_taxonomy_annotate_ts_alluvial()
 #' }
-plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01){
+plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01, label = TRUE){
   # check formatting of time_df -- is the first column named query_name, and does it contain all of the query_names that are in the taxonomy_annotate_df?
   if(!all(colnames(time_df) == c("query_name", "time"))){
     stop("The column names of time_df must be query_name and time. Please update the column names using colnames(time_df) <- c('query_name', 'time') and re-run.")
@@ -401,12 +407,16 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
                                                   alluvium = .data$tax_glom_col,
                                                   label    = .data$tax_glom_col,
                                                   fill     = .data$tax_glom_col)) +
-    ggalluvial::geom_alluvium(colour = "black", alpha = .4, decreasing = FALSE) +
+    ggalluvial::geom_alluvium(colour = "black", alpha = .5, decreasing = FALSE) +
     ggplot2::labs(x = "time", y = "abundance-weighted\nfraction of query", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005) +
     ggplot2::scale_fill_discrete(breaks = order_vector)
+
+  if(label == TRUE){
+    alluvial_plt <- alluvial_plt +
+      ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005)
+  }
 
   return(alluvial_plt)
 }
