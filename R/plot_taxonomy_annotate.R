@@ -318,6 +318,19 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 
 # time series alluvial plot -----------------------------------------------
 
+#' Make an expression vector for italicizing a subset of a vector
+#'
+#' @param x A character vector.
+#' @param plain A character vector specifying which string to keep in regular (not italic) format.
+#'
+#' @return An expression-formatted vector.
+make_expression <- function(x, plain = NULL) {
+  getfun <- function(x) {
+    ifelse(x == plain, "plain", "italic")
+  }
+  as.expression(unname(Map(function(f, v) substitute(f(v), list(f=as.name(f), v=as.character(v))), getfun(x), x)))
+}
+
 #' Visualize an allivual flow plot from taxonomic lineages from one or many samples
 #'
 #' @description
@@ -394,17 +407,13 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
     dplyr::summarize(f_unique_weighted = sum(.data$f_unique_weighted))
 
-  # create a vector to use to reorder the legend so that "other" is always last,
-  # a vector to italicize all entries in the legend except "other",
-  # and a palette vector that has XXX
+  # create a vector to use to reorder the legend so that "other" is always last
   if("other" %in% alluvium_df$tax_glom_col){
     vector <- alluvium_df %>%
       dplyr::filter(.data$tax_glom_col != "other")
-    order_vector <- c(unique(vector$tax_glom_col), "Other")
-    label_vector <- c(paste0('*', unique(vector$tax_glom_col), '*'), "Other")
+    order_vector <- c(unique(vector$tax_glom_col), "other")
   } else {
     order_vector <- unique(alluvium_df$tax_glom_col)
-    label_vector <- paste0('*', unique(alluvium_df$tax_glom_col), '*')
   }
 
   # create a palette vector if not specified by the user
@@ -422,11 +431,10 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     ggplot2::labs(x = "time", y = "abundance-weighted\nfraction of query", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggplot2::theme(legend.text = ggtext::element_markdown()) +
+    ggplot2::theme(legend.text.align = 0) +
     ggplot2::scale_fill_manual(breaks = order_vector,
-                               labels = label_vector,
+                               labels = make_expression(order_vector, plain = 'other'),
                                values = palette)
-  alluvial_plt
 
   if(label == TRUE){
     alluvial_plt <- alluvial_plt +
