@@ -336,6 +336,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' The minimum fraction that a taxonomic lineage needs to occur in at least one time series sample for that lineage to have an alluvial ribbon in the final plot.
 #' Lineages that occur below this threshold are grouped into an "other" category.
 #' @param label Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggalluvial::stat_alluvium(geom = "text")` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.
+#' @param palette An optional character vector of palette values passed to `scale_fill_manual(values = palette)`. If no palette is specified, RColorBrewer's Set2 is the default.
 #'
 #' @return A ggplot2 plot
 #' @export
@@ -346,7 +347,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' \dontrun{
 #' plot_taxonomy_annotate_ts_alluvial()
 #' }
-plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01, label = TRUE){
+plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01, label = TRUE, palette = NULL){
   # check formatting of time_df -- is the first column named query_name, and does it contain all of the query_names that are in the taxonomy_annotate_df?
   if(!all(colnames(time_df) == c("query_name", "time"))){
     stop("The column names of time_df must be query_name and time. Please update the column names using colnames(time_df) <- c('query_name', 'time') and re-run.")
@@ -393,13 +394,23 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     dplyr::group_by_at(dplyr::vars(dplyr::all_of(grp_by_vector))) %>%
     dplyr::summarize(f_unique_weighted = sum(.data$f_unique_weighted))
 
-  # create a vector to use to reorder the legend so that "other" is always last
+  # create a vector to use to reorder the legend so that "other" is always last,
+  # a vector to italicize all entries in the legend except "other",
+  # and a palette vector that has XXX
   if("other" %in% alluvium_df$tax_glom_col){
-    order_vector <- alluvium_df %>%
+    vector <- alluvium_df %>%
       dplyr::filter(.data$tax_glom_col != "other")
-    order_vector <- c(unique(order_vector$tax_glom_col), "other")
+    order_vector <- c(unique(vector$tax_glom_col), "Other")
+    label_vector <- c(paste0('*', unique(vector$tax_glom_col), '*'), "Other")
   } else {
     order_vector <- unique(alluvium_df$tax_glom_col)
+    label_vector <- paste0('*', unique(alluvium_df$tax_glom_col), '*')
+  }
+
+  # create a palette vector if not specified by the user
+  if(is.null(palette)){
+    # if the user doesn't supply a palette, use Set2
+    palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
   }
 
   alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
@@ -411,7 +422,11 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
     ggplot2::labs(x = "time", y = "abundance-weighted\nfraction of query", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggplot2::scale_fill_discrete(breaks = order_vector)
+    ggplot2::theme(legend.text = ggtext::element_markdown()) +
+    ggplot2::scale_fill_manual(breaks = order_vector,
+                               labels = label_vector,
+                               values = palette)
+  alluvial_plt
 
   if(label == TRUE){
     alluvial_plt <- alluvial_plt +

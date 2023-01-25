@@ -23,6 +23,7 @@ Imports:
     ggforce,
     ggplot2,
     ggrepel,
+    ggtext,
     grDevices,
     httr,
     jsonlite,

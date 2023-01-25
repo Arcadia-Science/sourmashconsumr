@@ -9,7 +9,8 @@ plot_taxonomy_annotate_ts_alluvial(
   time_df,
   tax_glom_level = NULL,
   fraction_threshold = 0.01,
-  label = TRUE
+  label = TRUE,
+  palette = NULL
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ The minimum fraction that a taxonomic lineage needs to occur in at least one tim
 Lineages that occur below this threshold are grouped into an "other" category.}
 
 \item{label}{Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggalluvial::stat_alluvium(geom = "text")` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.}
+
+\item{palette}{An optional character vector of palette values passed to `scale_fill_manual(values = palette)`. If no palette is specified, RColorBrewer's Set2 is the default.}
 }
 \value{
 A ggplot2 plot
