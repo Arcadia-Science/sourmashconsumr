@@ -7,7 +7,8 @@
 plot_taxonomy_annotate_sankey(
   taxonomy_annotate_df,
   tax_glom_level = NULL,
-  palette = NULL
+  palette = NULL,
+  label = TRUE
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ plot_taxonomy_annotate_sankey(
 \item{tax_glom_level}{Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."}
 
 \item{palette}{Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.}
+
+\item{label}{Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggforce::geom_parallel_sets_labels()` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.}
 }
 \value{
 A ggplot2 plot

@@ -4,10 +4,12 @@
 \alias{plot_signatures_upset}
 \title{Visualize the intersection of minhashes in sourmash signatures from many samples}
 \usage{
-plot_signatures_upset(upset_df)
+plot_signatures_upset(upset_df, ...)
 }
 \arguments{
 \item{upset_df}{An upset-compliant data frame.}
+
+\item{...}{Arguments passed to ComplexUpset::upset().}
 }
 \value{
 An upset plot produced by ComplexUpset::upset().

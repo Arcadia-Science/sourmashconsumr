@@ -8,7 +8,8 @@ plot_gather_upset(
   upset_df,
   color_by_database = FALSE,
   gather_df = NULL,
-  palette = NULL
+  palette = NULL,
+  ...
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ plot_gather_upset(
 \item{gather_df}{Gather results passed to from_gather_to_upset_df to create the input data frame. NULL unless color_by_database is set to TRUE.}
 
 \item{palette}{Optional argument specifying the palette to use. Ignored unless color_by_database is set to TRUE. Defaults to RColorBrewer Set2 if color_by_database is set to TRUE and palette is not specified.}
+
+\item{...}{Arguments passed to ComplexUpset::upset().}
 }
 \value{
 A ComplexUpset plot.

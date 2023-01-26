@@ -122,6 +122,7 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' To produce an alternative visualization, it may be easiest to run `sourmashconsumr::plot_signatures_upset` to retrieve the function source code and alter it.
 #'
 #' @param upset_df An upset-compliant data frame.
+#' @param ... Arguments passed to ComplexUpset::upset().
 #'
 #' @return An upset plot produced by ComplexUpset::upset().
 #' @export
@@ -130,18 +131,18 @@ from_signatures_to_upset_df <- function(signatures_df){
 #' \dontrun{
 #' plot_signatures_upset()
 #' }
-plot_signatures_upset <- function(upset_df){
+plot_signatures_upset <- function(upset_df, ...){
   upset_plt <- ComplexUpset::upset(upset_df, intersect = names(upset_df), set_sizes = F,
                                    base_annotations=list(
                                      '# scaled k-mers'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                                        text_colors=c(on_background='black', on_bar='black'),
                                                                                        mapping=ggplot2::aes(fill='bars_color')) +
                                        ggplot2::scale_fill_manual(values=c('bars_color'='lightgrey'), guide='none') +
-                                       ggplot2::theme_classic() +
-                                       ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                      axis.ticks.x = ggplot2::element_blank(),
-                                                      axis.title.x = ggplot2::element_blank()))
-  )
+                                       ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                                                      panel.grid.major = ggplot2::element_blank(),
+                                                      panel.grid.minor = ggplot2::element_blank(),
+                                                      axis.line        = ggplot2::element_line(colour = "black", linewidth = ggplot2::rel(1)))),
+                                   ...)
   return(upset_plt)
 }
 

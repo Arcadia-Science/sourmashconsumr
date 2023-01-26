@@ -174,6 +174,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' @param upset_inputs List of inputs produced by from_taxonomy_annotate_to_upset_inputs().
 #' @param fill Optional argument specifying which level of taxonomy to fill the upset plot intersections with. Only levels above upset_inputs$tax_glom_level are valid. Uses the Set2 palette so cannot visualize more than 8 levels.
 #' @param palette An optional character vector specifying the color palette to use. Ignored if fill is not set. Defaults to the colors in RColorBrewer Set2.
+#' @param ... Arguments passed to ComplexUpset::upset().
 #'
 #' @return A ComplexUpset plot
 #' @export
@@ -184,7 +185,7 @@ from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
 #' \dontrun{
 #' plot_taxonomy_annotate_upset()
 #' }
-plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NULL){
+plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NULL, ...){
   upset_df <- upset_inputs[[1]]
   taxonomy_annotate_df <- upset_inputs[[2]]
   tax_glom_level <- upset_inputs[[3]]
@@ -214,16 +215,16 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
     # plot the upset plot
     plt <- ComplexUpset::upset(upset_df, intersect = unique(upset_inputs[[2]]$query_name), set_sizes = F,
                                base_annotations=list(
-                                 '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
-                                                                              text_colors=c(on_background='black', on_bar='black'),
-                                                                              mapping=ggplot2::aes(fill = .data$fill)) +
+                                 '# lineages'=ComplexUpset::intersection_size(text = list(vjust=0.4, hjust=.05, angle=90),
+                                                                              text_colors = c(on_background='black', on_bar='black'),
+                                                                              mapping = ggplot2::aes(fill = .data$fill)) +
                                    ggplot2::scale_fill_manual(values = palette) +
                                    ggplot2::labs(fill = fill) +
-                                   ggplot2::theme_classic() +
-                                   ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                  axis.ticks.x = ggplot2::element_blank(),
-                                                  axis.title.x = ggplot2::element_blank()))
-    )
+                                   ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                                                  panel.grid.major = ggplot2::element_blank(),
+                                                  panel.grid.minor = ggplot2::element_blank(),
+                                                  axis.line        = ggplot2::element_line(colour = "black", linewidth = ggplot2::rel(1)))),
+                               ...)
     return(plt)
   }
 
@@ -232,11 +233,11 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
                              base_annotations=list(
                                '# lineages'=ComplexUpset::intersection_size(text=list(vjust=0.4, hjust=.05, angle=90),
                                                                             text_colors=c(on_background='black', on_bar='black')) +
-                                 ggplot2::theme_classic() +
-                                 ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                                                axis.ticks.x = ggplot2::element_blank(),
-                                                axis.title.x = ggplot2::element_blank())
-  ))
+                                 ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                                                panel.grid.major = ggplot2::element_blank(),
+                                                panel.grid.minor = ggplot2::element_blank(),
+                                                axis.line        = ggplot2::element_line(colour = "black", linewidth = ggplot2::rel(1)))),
+                               ...)
   return(plt)
 }
 
@@ -253,6 +254,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
 #' @param taxonomy_annotate_df Data frame containing outputs from sourmash taxonomy annotate. Can contain results from one or many runs of sourmash taxonomy annotate. If specified, agglomeration occurs across all queries.
 #' @param tax_glom_level Optional character string specifying the taxonomic rank to agglomerate k-mer counts. Must be one of "domain", "phylum", "class", "order", "family", "genus", "species."
 #' @param palette Optional character vector specifying a palette. Colors in the palette are recycled across taxonomic labels. If no palette is specified, RColorBrewer's Set2 is the default.
+#' @param label Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggforce::geom_parallel_sets_labels()` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.
 #'
 #' @return A ggplot2 plot
 #' @export
@@ -263,7 +265,7 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
 #' \dontrun{
 #' plot_taxonomy_annotate_sankey()
 #' }
-plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL){
+plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL, label = TRUE){
   if(!is.null(tax_glom_level)){
     agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
   } else {
@@ -293,7 +295,6 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
   sankey_plt <- ggplot2::ggplot(data, ggplot2::aes(x = .data$x, id = .data$id, split = .data$y, value = .data$sum_n_unique_kmers)) +
     ggforce::geom_parallel_sets(alpha = 0.3, axis.width = 0.1) +
     ggforce::geom_parallel_sets_axes(axis.width = 0.2, ggplot2::aes(fill = .data$y)) +
-    ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25) +
     ggplot2::theme_classic() +
     ggplot2::theme(axis.line.y = ggplot2::element_blank(),
                    axis.text.y = ggplot2::element_blank(),
@@ -307,10 +308,28 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
                                 limits = c(.75, length(agglom_cols) + 1)) +
     ggplot2::scale_fill_manual(values = palette)
 
+  if(label == TRUE){
+    sankey_plt <- sankey_plt +
+      ggforce::geom_parallel_sets_labels(colour = 'black', angle = 360, size = 2, hjust = -0.25)
+  }
+
   return(sankey_plt)
 }
 
 # time series alluvial plot -----------------------------------------------
+
+#' Make an expression vector for italicizing a subset of a vector
+#'
+#' @param x A character vector.
+#' @param plain A character vector specifying which string to keep in regular (not italic) format.
+#'
+#' @return An expression-formatted vector.
+make_expression <- function(x, plain = NULL) {
+  getfun <- function(x) {
+    ifelse(x == plain, "plain", "italic")
+  }
+  as.expression(unname(Map(function(f, v) substitute(f(v), list(f=as.name(f), v=as.character(v))), getfun(x), x)))
+}
 
 #' Visualize an allivual flow plot from taxonomic lineages from one or many samples
 #'
@@ -329,6 +348,8 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' @param fraction_threshold A number between 0-1. Defaults to 0.01.
 #' The minimum fraction that a taxonomic lineage needs to occur in at least one time series sample for that lineage to have an alluvial ribbon in the final plot.
 #' Lineages that occur below this threshold are grouped into an "other" category.
+#' @param label Boolean controlling whether taxonomy labels are added to the plot. The default, TRUE, plots labels. Setting to FALSE removes the labels and can be used to control the label appearances; add a layer with `ggalluvial::stat_alluvium(geom = "text")` to re-add labels and use arguments passed to `ggplot2::layer()` to control the appearance of the output.
+#' @param palette An optional character vector of palette values passed to `scale_fill_manual(values = palette)`. If no palette is specified, RColorBrewer's Set2 is the default.
 #'
 #' @return A ggplot2 plot
 #' @export
@@ -339,7 +360,7 @@ plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level =
 #' \dontrun{
 #' plot_taxonomy_annotate_ts_alluvial()
 #' }
-plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01){
+plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, tax_glom_level = NULL, fraction_threshold = 0.01, label = TRUE, palette = NULL){
   # check formatting of time_df -- is the first column named query_name, and does it contain all of the query_names that are in the taxonomy_annotate_df?
   if(!all(colnames(time_df) == c("query_name", "time"))){
     stop("The column names of time_df must be query_name and time. Please update the column names using colnames(time_df) <- c('query_name', 'time') and re-run.")
@@ -388,11 +409,17 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
 
   # create a vector to use to reorder the legend so that "other" is always last
   if("other" %in% alluvium_df$tax_glom_col){
-    order_vector <- alluvium_df %>%
+    vector <- alluvium_df %>%
       dplyr::filter(.data$tax_glom_col != "other")
-    order_vector <- c(unique(order_vector$tax_glom_col), "other")
+    order_vector <- c(unique(vector$tax_glom_col), "other")
   } else {
     order_vector <- unique(alluvium_df$tax_glom_col)
+  }
+
+  # create a palette vector if not specified by the user
+  if(is.null(palette)){
+    # if the user doesn't supply a palette, use Set2
+    palette <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")
   }
 
   alluvial_plt <- ggplot2::ggplot(alluvium_df, ggplot2::aes(x = .data$time,
@@ -400,12 +427,19 @@ plot_taxonomy_annotate_ts_alluvial <- function(taxonomy_annotate_df, time_df, ta
                                                   alluvium = .data$tax_glom_col,
                                                   label    = .data$tax_glom_col,
                                                   fill     = .data$tax_glom_col)) +
-    ggalluvial::geom_alluvium(colour = "black", alpha = .4, decreasing = FALSE) +
+    ggalluvial::geom_alluvium(colour = "black", alpha = .5, decreasing = FALSE) +
     ggplot2::labs(x = "time", y = "abundance-weighted\nfraction of query", colour = "", fill = tax_glom_level) +
     ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
     ggplot2::theme_classic() +
-    ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005) +
-    ggplot2::scale_fill_discrete(breaks = order_vector)
+    ggplot2::theme(legend.text.align = 0) +
+    ggplot2::scale_fill_manual(breaks = order_vector,
+                               labels = make_expression(order_vector, plain = 'other'),
+                               values = palette)
+
+  if(label == TRUE){
+    alluvial_plt <- alluvial_plt +
+      ggalluvial::stat_alluvium(geom = "text", size = 2, decreasing = FALSE, min.y = 0.005)
+  }
 
   return(alluvial_plt)
 }
@@ -506,10 +540,10 @@ from_taxonomy_annotate_to_multi_strains <- function(taxonomy_annotate_df, plot_t
                                               y = .data$average_abund,
                                               label = round(.data$f_match, digits = 2))) +
     ggplot2::geom_point(ggplot2::aes(size = .data$f_match)) +
-    ggplot2::coord_flip() +
+    ggplot2::coord_flip(clip = "off") +
     ggplot2::facet_wrap(~.data$query_name + .data$species, scales = "free",
                         labeller = ggplot2::label_parsed) +
-    ggrepel::geom_text_repel(size = 2, color = "grey") +
+    ggrepel::geom_label_repel(size = 2, color = "black", box.padding = 0.1, label.padding = 0.1, alpha = 0.8) +
     ggplot2::theme_classic() +
     ggplot2::theme(strip.background = ggplot2::element_blank()) +
     ggplot2::labs(y = "average abundance of k-mers in genome",
