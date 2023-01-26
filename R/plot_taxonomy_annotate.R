@@ -540,10 +540,10 @@ from_taxonomy_annotate_to_multi_strains <- function(taxonomy_annotate_df, plot_t
                                               y = .data$average_abund,
                                               label = round(.data$f_match, digits = 2))) +
     ggplot2::geom_point(ggplot2::aes(size = .data$f_match)) +
-    ggplot2::coord_flip() +
+    ggplot2::coord_flip(clip = "off") +
     ggplot2::facet_wrap(~.data$query_name + .data$species, scales = "free",
                         labeller = ggplot2::label_parsed) +
-    ggrepel::geom_text_repel(size = 2, color = "grey") +
+    ggrepel::geom_text_repel(size = 2, color = "grey", box.padding = 0.1, label.padding = 0.1, alpha = 0.8) +
     ggplot2::theme_classic() +
     ggplot2::theme(strip.background = ggplot2::element_blank()) +
     ggplot2::labs(y = "average abundance of k-mers in genome",
