@@ -146,6 +146,25 @@ The html file should not be pushed to GitHub.
 The README.md is created from a README.Rmd file.
 To edit the README.md file, make changes to the README.Rmd file and knit it.
 
+### pkgdown package documentation site
+
+sourmashconsumr uses [pkgdown](https://pkgdown.r-lib.org/index.html) to build the sourmashconsumr documentation.
+To build the package documentation site locally, you can use:
+```
+usethis::use_pkgdown()
+pkgdown::build_site()
+```
+
+You shouldn't have to do this next part, but to set up GitHub Actions so the site would be automatically built, we used the following code:
+```
+# set up git credentials
+usethis::gh_token_help()
+usethis::create_github_token()
+gitcreds::gitcreds_set()
+# use gh-pages and github actions to build site
+usethis::use_pkgdown_github_pages()
+```
+
 ### Checking all the things
 
 After making changes, you should run `devtools::check()` locally to make sure all tests pass, documentation is updated, and there are no other failures or warning in the local build process.
