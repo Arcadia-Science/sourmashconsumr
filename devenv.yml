@@ -8,6 +8,7 @@ dependencies:
    - r-testthat=3.1.6
    - r-usethis=2.1.6
    - r-roxygen2=7.2.1
+   - r-pkdown=2.0.7
    - r-stringr=1.5.0
    - r-complexupset=1.3.3
    - r-dplyr=1.0.10

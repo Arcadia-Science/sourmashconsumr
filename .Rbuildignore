@@ -6,3 +6,6 @@
 ^data-raw$
 ^devdoc\.md$
 ^devenv\.yml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
