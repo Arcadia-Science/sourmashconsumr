@@ -21,8 +21,8 @@ You can install the development version of sourmashconsumr from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("Arcadia-Science/sourmashconsumr")
+# install.packages("remotes")
+remotes::install_github("Arcadia-Science/sourmashconsumr")
 ```
 
 Eventually, we hope to release sourmashconsumr on CRAN and to provide a
