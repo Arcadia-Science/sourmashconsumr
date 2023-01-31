@@ -75,63 +75,8 @@
 <p>To access the functions in the sourmashconsumr package, you can load it with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://arcadia-science.github.io/sourmashconsumr/">sourmashconsumr</a></span><span class="op">)</span></span></code></pre></div>
-<p>The sourmashconsumr package contains a variety of functions to work with the outputs of the sourmash python package. <code>read*</code> functions read and parse the outputs of sourmash into data frames. <code>plot*</code> functions visualize the sourmash outputs. <code>from_*to_*</code> functions convert sourmash data frames into the formats of other popular R packages (e.g. phyloseq). sourmashconsumr also contains a few utility functions that work with other datatypes (at this time, mostly upset data frames). See a complete list of functions below, sorted by sourmash output that the function operates on:</p>
-<ul>
-<li>signatures (output by <code>sourmash sketch</code> or <code>sourmash compute</code>):
-<ul>
-<li><code><a href="reference/read_signature.html">read_signature()</a></code></li>
-<li>upset plots: <code><a href="reference/from_signatures_to_upset_df.html">from_signatures_to_upset_df()</a></code>, <code><a href="reference/plot_signatures_upset.html">plot_signatures_upset()</a></code>
-</li>
-<li>rarefaction plots for signatures sketched from reads: <code><a href="reference/from_signatures_to_rarefaction_df.html">from_signatures_to_rarefaction_df()</a></code>, <code><a href="reference/plot_signatures_rarefaction.html">plot_signatures_rarefaction()</a></code>
-</li>
-</ul>
-</li>
-<li>sourmash compare csv:
-<ul>
-<li><code>read_compare()</code></li>
-<li>MDS plot: <code><a href="reference/make_compare_mds.html">make_compare_mds()</a></code>, <code><a href="reference/plot_compare_mds.html">plot_compare_mds()</a></code>
-</li>
-<li>heatmap: <code><a href="reference/plot_compare_heatmap.html">plot_compare_heatmap()</a></code>
-</li>
-</ul>
-</li>
-<li>sourmash taxonomy annotate csv:
-<ul>
-<li><code><a href="reference/read_taxonomy_annotate.html">read_taxonomy_annotate()</a></code></li>
-<li>taxonomy agglomeration: <code><a href="reference/tax_glom_taxonomy_annotate.html">tax_glom_taxonomy_annotate()</a></code>
-</li>
-<li>upset plot: <code><a href="reference/from_taxonomy_annotate_to_upset_inputs.html">from_taxonomy_annotate_to_upset_inputs()</a></code>, <code><a href="reference/plot_taxonomy_annotate_upset.html">plot_taxonomy_annotate_upset()</a></code>
-</li>
-<li>sankey plot: <code><a href="reference/plot_taxonomy_annotate_sankey.html">plot_taxonomy_annotate_sankey()</a></code>
-</li>
-<li>time series alluvial plot: <code><a href="reference/plot_taxonomy_annotate_ts_alluvial.html">plot_taxonomy_annotate_ts_alluvial()</a></code>
-</li>
-<li>detect the presence of multiple strains of a single species in a metagenome: <code><a href="reference/from_taxonomy_annotate_to_multi_strains.html">from_taxonomy_annotate_to_multi_strains()</a></code>
-</li>
-<li>to metacoder: <code><a href="reference/from_taxonomy_annotate_to_metacoder.html">from_taxonomy_annotate_to_metacoder()</a></code>
-</li>
-<li>to phyloseq: <code><a href="reference/from_taxonomy_annotate_to_phyloseq.html">from_taxonomy_annotate_to_phyloseq()</a></code>
-</li>
-</ul>
-</li>
-<li>sourmash gather csv:
-<ul>
-<li><code><a href="reference/read_gather.html">read_gather()</a></code></li>
-<li>barchart: <code><a href="reference/plot_gather_classified.html">plot_gather_classified()</a></code>
-</li>
-<li>upset plot: <code><a href="reference/from_gather_to_upset_df.html">from_gather_to_upset_df()</a></code>, <code><a href="reference/plot_gather_upset.html">plot_gather_upset()</a></code>
-</li>
-</ul>
-</li>
-<li>upset utilities:
-<ul>
-<li><code><a href="reference/from_list_to_upset_df.html">from_list_to_upset_df()</a></code></li>
-<li><code><a href="reference/from_upset_df_to_intersection_members.html">from_upset_df_to_intersection_members()</a></code></li>
-<li><code><a href="reference/from_upset_df_to_intersection_summary.html">from_upset_df_to_intersection_summary()</a></code></li>
-<li><code><a href="reference/from_upset_df_to_intersections.html">from_upset_df_to_intersections()</a></code></li>
-</ul>
-</li>
-</ul>
+<p>The sourmashconsumr package contains a variety of functions to work with the outputs of the sourmash python package. The table below summarizes which sourmash outputs the sourmashconsumr package operates on and the functions that are available. For a complete list of functions in the sourmashconsumr package, see the <a href="https://arcadia-science.github.io/sourmashconsumr/reference/index.html">documentation</a>.</p>
+<p><img src="https://i.imgur.com/UfuiAhw.png" width="750"></p>
 </div>
 <div class="section level2">
 <h2 id="developer-documentation">Developer documentation<a class="anchor" aria-label="anchor" href="#developer-documentation"></a>
@@ -141,7 +86,10 @@
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>sourmashconsumr doesn’t have a citation yet, but sourmash does! If you use sourmash in your work, please cite: <a href="https://joss.theoj.org/papers/10.21105/joss.00027" class="external-link">Brown and Irber (2016), doi:10.21105/joss.00027.</a></p>
+<ul>
+<li>If you use sourmashconsumr in your work, please cite <a href="https://arcadia-research.pubpub.org/pub/resource-sourmashconsumr" class="external-link">DOI: 10.57844/arcadia-1896-ke33</a>.</li>
+<li>If you use sourmash in your work, please cite <a href="https://joss.theoj.org/papers/10.21105/joss.00027" class="external-link">DOI: 10.21105/joss.00027</a>.</li>
+</ul>
 <p>If you’d like more information on how sourmash works, please see the following publications:</p>
 <ul>
 <li>For a general background on how sourmash works and examples of how to use it: <a href="https://f1000research.com/articles/8-1006/v1" class="external-link">Large-scale sequence comparisons with sourmash</a>

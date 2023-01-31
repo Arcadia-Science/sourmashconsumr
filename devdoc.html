@@ -99,11 +99,55 @@
 <p>To start developing, open the sourmashconsumr.Rproj in RStudio (see above). Then, load the <code>devtools</code> package and use the <code>devtools::load_all()</code> function to load sourmashconsumr.</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span></code></pre>
-<p>You can then open the file you want to change and make changes. Core package functions can be found in the <code>R</code> folder. Functions are grouped by action (e.g. <code>read_sourmash_outputs.R</code> contains all of the <code>read_*()</code> functions) or by data type (e.g. functions that involve plotting the output of sourmash taxonomy annotate are in the <code>plot_taxonomy_annotate.R</code> file). Tests and test files are located in the <code>tests/testthat</code> folder.</p>
+<p>You can then open the file you want to change and make changes.</p>
+</div>
+<div class="section level3">
+<h3 id="adding-or-changing-functions">Adding or changing functions<a class="anchor" aria-label="anchor" href="#adding-or-changing-functions"></a></h3>
+<p>Core package functions can be found in the <code>R</code> folder. Functions are grouped by action (e.g. <code>read_sourmash_outputs.R</code> contains all of the <code>read_*()</code> functions) or by data type (e.g. functions that involve plotting the output of sourmash taxonomy annotate are in the <code>plot_taxonomy_annotate.R</code> file).</p>
+<div class="section level4">
+<h4 id="naming-functions">Naming functions<a class="anchor" aria-label="anchor" href="#naming-functions"></a></h4>
+<p>The functions in the sourmashconsumr package follow a naming scheme Functions that are exported (e.g. user-facing) are named by the action completed by the function, the sourmash output type the act on, and if relevant, a description of the action taken.</p>
+<ul><li>
+<strong>Action words</strong>:
+<ul><li><code>read</code></li>
+<li><code>plot</code></li>
+<li><code>from</code></li>
+</ul></li>
+<li>
+<strong>sourmash output types</strong>:
+<ul><li><code>signature</code></li>
+<li><code>compare_csv</code></li>
+<li><code>gather</code></li>
+<li><code>taxonomy_annotate</code></li>
+</ul></li>
+<li>
+<strong>example actions</strong>:
+<ul><li><code>to_metacoder</code></li>
+<li><code>upset</code></li>
+<li><code>heatmap</code></li>
+<li><code>mds</code></li>
+</ul></li>
+</ul><p>Functions that are not exported do not follow a naming scheme but strive to be fully descriptive of their actions, and when possible use the <strong>sourmash output types</strong> to make it clear what type of data the internal function operates on.</p>
+<ul><li>
+<strong>examples of internal functions</strong>
+<ul><li><code><a href="reference/check_compare_df_sample_col_and_move_to_rowname.html">check_compare_df_sample_col_and_move_to_rowname()</a></code></li>
+<li><code><a href="reference/check_and_edit_names_in_signatures_df.html">check_and_edit_names_in_signatures_df()</a></code></li>
+<li><code><a href="reference/check_uniform_parameters_in_signatures_df.html">check_uniform_parameters_in_signatures_df()</a></code></li>
+<li><code><a href="reference/make_agglom_cols.html">make_agglom_cols()</a></code></li>
+<li><code><a href="reference/make_expression.html">make_expression()</a></code></li>
+<li><code><a href="reference/get_scaled_for_max_hash.html">get_scaled_for_max_hash()</a></code></li>
+<li><code><a href="reference/pivot_wider_taxonomy_annotate.html">pivot_wider_taxonomy_annotate()</a></code></li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="other-things">Other things<a class="anchor" aria-label="anchor" href="#other-things"></a></h4>
+<p>For the <code>plot*</code> functions, sourmashconsumr tries not to put anything in the <code>theme()</code> layer so that users can control the look of their plot with out conflicts. This isn’t always do-able, but we strive to follow this rule.</p>
+<p>Layers that label the plot should be controlled to by a boolean argument <code>label</code> so that users can turn off labels and re-add them themselves so they can control the look of those labels (italicized, size, etc.). When there is a label boolean as a function argument, the <code>@param</code> string documenting that parameter should contain an example of how to add the default labels back to the plot as some of these are esoteric and would be hard to divine without an example.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h3>
-<p>The sourmashconsumr package uses unit tests to make sure that code changes don’t break existing functions. To run all tests, you can use the <code>testthat::test()</code> function:</p>
+<p>The sourmashconsumr package uses unit tests to make sure that code changes don’t break existing functions. Tests and test files are located in the <code>tests/testthat</code> folder. To run all tests, you can use the <code>testthat::test()</code> function:</p>
 <pre><code><span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span></code></pre>
 <p>Alternatively, you can run tests related to the active file:</p>
 <pre><code><span><span class="fu">test_active_file</span><span class="op">(</span><span class="op">)</span></span></code></pre>
@@ -117,7 +161,7 @@
 <h3 id="vignette">Vignette<a class="anchor" aria-label="anchor" href="#vignette"></a></h3>
 <p>The vignette html file is built from the Rmd file <code>vignettes/sourmashconsumr.Rmd</code>. The vignette can be built using the following command:</p>
 <pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build_rmd</span><span class="op">(</span><span class="st">"vignettes/sourmashconsumr.Rmd"</span><span class="op">)</span></span></code></pre>
-<p>The html file should not be pushed to GitHub.</p>
+<p>If you make changes to the vignette, make sure you build it locally and that your changes appear how you want them to before you push changes to GitHub. The html file should not be pushed to GitHub.</p>
 </div>
 <div class="section level3">
 <h3 id="github-readme">GitHub README<a class="anchor" aria-label="anchor" href="#github-readme"></a></h3>
