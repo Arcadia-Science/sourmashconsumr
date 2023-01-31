@@ -42,46 +42,13 @@ library(sourmashconsumr)
 ```
 
 The sourmashconsumr package contains a variety of functions to work with
-the outputs of the sourmash python package. `read*` functions read and
-parse the outputs of sourmash into data frames. `plot*` functions
-visualize the sourmash outputs. `from_*to_*` functions convert sourmash
-data frames into the formats of other popular R packages
-(e.g. phyloseq). sourmashconsumr also contains a few utility functions
-that work with other datatypes (at this time, mostly upset data frames).
-See a complete list of functions below, sorted by sourmash output that
-the function operates on:
+the outputs of the sourmash python package. The table below summarizes
+which sourmash outputs the sourmashconsumr package operates on and the
+functions that are available. For a complete list of functions in the
+sourmashconsumr package, see the
+[documentation](https://arcadia-science.github.io/sourmashconsumr/reference/index.html).
 
-- signatures (output by `sourmash sketch` or `sourmash compute`):
-  - `read_signature()`
-  - upset plots: `from_signatures_to_upset_df()`,
-    `plot_signatures_upset()`
-  - rarefaction plots for signatures sketched from reads:
-    `from_signatures_to_rarefaction_df()`,
-    `plot_signatures_rarefaction()`
-- sourmash compare csv:
-  - `read_compare()`
-  - MDS plot: `make_compare_mds()`, `plot_compare_mds()`
-  - heatmap: `plot_compare_heatmap()`
-- sourmash taxonomy annotate csv:
-  - `read_taxonomy_annotate()`
-  - taxonomy agglomeration: `tax_glom_taxonomy_annotate()`
-  - upset plot: `from_taxonomy_annotate_to_upset_inputs()`,
-    `plot_taxonomy_annotate_upset()`
-  - sankey plot: `plot_taxonomy_annotate_sankey()`
-  - time series alluvial plot: `plot_taxonomy_annotate_ts_alluvial()`
-  - detect the presence of multiple strains of a single species in a
-    metagenome: `from_taxonomy_annotate_to_multi_strains()`
-  - to metacoder: `from_taxonomy_annotate_to_metacoder()`
-  - to phyloseq: `from_taxonomy_annotate_to_phyloseq()`
-- sourmash gather csv:
-  - `read_gather()`
-  - barchart: `plot_gather_classified()`
-  - upset plot: `from_gather_to_upset_df()`, `plot_gather_upset()`
-- upset utilities:
-  - `from_list_to_upset_df()`
-  - `from_upset_df_to_intersection_members()`
-  - `from_upset_df_to_intersection_summary()`
-  - `from_upset_df_to_intersections()`
+<img src="https://i.imgur.com/UfuiAhw.png" width="750" />
 
 ## Developer documentation
 
@@ -92,9 +59,10 @@ the [developer documentation](devdoc.md).
 
 ## Citation
 
-sourmashconsumr doesn’t have a citation yet, but sourmash does! If you
-use sourmash in your work, please cite: [Brown and Irber (2016),
-doi:10.21105/joss.00027.](https://joss.theoj.org/papers/10.21105/joss.00027)
+- If you use sourmashconsumr in your work, please cite [DOI:
+  10.57844/arcadia-1896-ke33](https://arcadia-research.pubpub.org/pub/resource-sourmashconsumr).
+- If you use sourmash in your work, please cite [DOI:
+  10.21105/joss.00027](https://joss.theoj.org/papers/10.21105/joss.00027).
 
 If you’d like more information on how sourmash works, please see the
 following publications:

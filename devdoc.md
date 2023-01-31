@@ -102,13 +102,55 @@ load_all()
 ```
 
 You can then open the file you want to change and make changes.
+
+### Adding or changing functions
+
 Core package functions can be found in the `R` folder. 
 Functions are grouped by action (e.g. `read_sourmash_outputs.R` contains all of the `read_*()` functions) or by data type (e.g. functions that involve plotting the output of sourmash taxonomy annotate are in the `plot_taxonomy_annotate.R` file).
-Tests and test files are located in the `tests/testthat` folder.
+
+#### Naming functions
+
+The functions in the sourmashconsumr package follow a naming scheme
+Functions that are exported (e.g. user-facing) are named by the action completed by the function, the sourmash output type the act on, and if relevant, a description of the action taken.
+
++ **Action words**:
+    + `read`
+    + `plot`
+    + `from`
++ **sourmash output types**:
+    + `signature`
+    + `compare_csv`
+    + `gather`
+    + `taxonomy_annotate`
++ **example actions**:
+    + `to_metacoder`
+    + `upset`
+    + `heatmap`
+    + `mds`
+    
+Functions that are not exported do not follow a naming scheme but strive to be fully descriptive of their actions, and when possible use the **sourmash output types** to make it clear what type of data the internal function operates on. 
+
++ **examples of internal functions**
+   + `check_compare_df_sample_col_and_move_to_rowname()`
+   + `check_and_edit_names_in_signatures_df()`
+   + `check_uniform_parameters_in_signatures_df()`
+   + `make_agglom_cols()`
+   + `make_expression()`
+   + `get_scaled_for_max_hash()`
+   + `pivot_wider_taxonomy_annotate()`
+
+#### Other things
+
+For the `plot*` functions, sourmashconsumr tries not to put anything in the `theme()` layer so that users can control the look of their plot with out conflicts.
+This isn't always do-able, but we strive to follow this rule.
+
+Layers that label the plot should be controlled to by a boolean argument `label` so that users can turn off labels and re-add them themselves so they can control the look of those labels (italicized, size, etc.).
+When there is a label boolean as a function argument, the `@param` string documenting that parameter should contain an example of how to add the default labels back to the plot as some of these are esoteric and would be hard to divine without an example.
 
 ### Tests
 
 The sourmashconsumr package uses unit tests to make sure that code changes don't break existing functions.
+Tests and test files are located in the `tests/testthat` folder.
 To run all tests, you can use the `testthat::test()` function:
 
 ```
@@ -139,6 +181,7 @@ The vignette can be built using the following command:
 devtools::build_rmd("vignettes/sourmashconsumr.Rmd")
 ```
 
+If you make changes to the vignette, make sure you build it locally and that your changes appear how you want them to before you push changes to GitHub.
 The html file should not be pushed to GitHub.
 
 ### GitHub README
