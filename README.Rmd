@@ -65,4 +65,4 @@ If you'd like more information on how sourmash works, please see the following p
 
 * For a general background on how sourmash works and examples of how to use it: [Large-scale sequence comparisons with sourmash](https://f1000research.com/articles/8-1006/v1)
 * For a mathematical description of FracMinHash and a demonstration of the accuracy of sourmash gather: [Lightweight compositional analysis of metagenomes with FracMinHash and minimum metagenome covers](https://www.biorxiv.org/content/10.1101/2022.01.11.475838v2.abstract)
-* See [Evaluation of taxonomic classification and profiling methods for long-read shotgun metagenomic sequencing datasets](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-05103-0) for an evaluation of sourmash's performance for taxonomic profiling.
+* For an evaluation of sourmash's performance for taxonomic profiling: [Evaluation of taxonomic classification and profiling methods for long-read shotgun metagenomic sequencing datasets](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-05103-0) .
