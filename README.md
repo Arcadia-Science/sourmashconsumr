@@ -5,7 +5,7 @@
 
 # ⚠️ Repository moved ⚠️
 
-> **NOTE:** Arcadia Science is no longer actively developing this package. It is now maintained by `sourmash-bio` at the following fork: **https://github.com/sourmash-bio/sourmashconsumr**.
+> **NOTE:** Arcadia Science is no longer actively developing this package. It is now maintained by `sourmash-bio` at the following repository: **https://github.com/sourmash-bio/sourmashconsumr**.
 
 <!-- badges: start -->
 
