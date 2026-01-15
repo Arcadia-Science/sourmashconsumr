@@ -3,6 +3,10 @@
 
 # sourmashconsumr
 
+# ⚠️ Repository moved ⚠️
+
+> **NOTE:** Arcadia Science is no longer actively developing this package. It is now maintained by `sourmash-bio` at the following repository: **https://github.com/sourmash-bio/sourmashconsumr**.
+
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/Arcadia-Science/sourmashconsumr/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/Arcadia-Science/sourmashconsumr/actions/workflows/check-standard.yaml)
