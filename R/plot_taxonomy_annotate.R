@@ -9,23 +9,34 @@
 #'
 #' @examples
 #' make_agglom_cols("species", with_query_name = FALSE)
-make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
-  if(tax_glom_level == "domain"){
-    agglom_cols <- c("domain")
-  } else if(tax_glom_level == "phylum"){
-    agglom_cols <- c("domain", "phylum")
-  } else if(tax_glom_level == "class"){
-    agglom_cols <- c("domain", "phylum", "class")
-  } else if(tax_glom_level == "order"){
-    agglom_cols <- c("domain", "phylum", "class", "order")
-  } else if(tax_glom_level == "family"){
-    agglom_cols <- c("domain", "phylum", "class", "order", "family")
-  } else if(tax_glom_level == "genus"){
-    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus")
-  } else if(tax_glom_level == "species"){
-    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
+make_agglom_cols <- function(tax_glom_level=NULL, with_query_name = FALSE, lins=FALSE){
+  if (lins == TRUE){
+    if (is.null(tax_glom_level)){
+      tax_glom_level = "20"  #hacky, FIXME -- here we assume lowest possible lin is 20
+    }
+    # get character vector of all numbers from 1 to tax_glom level (inclusive)
+    # (will this be confusing since sourmash lins are 0 based?)
+    lin_chars = as.character(seq(1, as.integer(tax_glom_level)))
+    agglom_cols <- paste("lin", lin_chars, sep="")
+  } else{
+    if (is.null(tax_glom_level)){
+       agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+    } else if(tax_glom_level == "domain"){
+      agglom_cols <- c("domain")
+    } else if(tax_glom_level == "phylum"){
+      agglom_cols <- c("domain", "phylum")
+    } else if(tax_glom_level == "class"){
+      agglom_cols <- c("domain", "phylum", "class")
+    } else if(tax_glom_level == "order"){
+      agglom_cols <- c("domain", "phylum", "class", "order")
+    } else if(tax_glom_level == "family"){
+      agglom_cols <- c("domain", "phylum", "class", "order", "family")
+    } else if(tax_glom_level == "genus"){
+      agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus")
+    } else if(tax_glom_level == "species"){
+      agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species")
+    }
   }
-
   if(with_query_name == TRUE){
     agglom_cols <- c("query_name", agglom_cols)
     return(agglom_cols)
@@ -73,7 +84,7 @@ make_agglom_cols <- function(tax_glom_level, with_query_name = FALSE){
 #' \dontrun{
 #' tax_glom_taxonomy_annotate()
 #' }
-tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL, glom_var = "n_unique_kmers"){
+tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NULL, glom_var = "n_unique_kmers", lins=FALSE){
   # if tax_glom_level is not defined, return the taxonomy_annotate_df unchanged
   if(is.null(tax_glom_level)){
     message("tax_glom_level not defined, not doing any agglomeration. Returning input data frame unchanged.")
@@ -83,29 +94,47 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
   # if tax_glom_level is defined, parse lineage and agglomerate counts to that level of taxonomy
   if(!is.null(tax_glom_level)){
     # make sure only except arguments are returned
-    if(!tax_glom_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
+    if(lins==TRUE){
+      if(!tax_glom_level %in% as.character(seq(0:100))){ # hacky check: FIXME
+      stop("Unrecognized string passed to tax_glom_level. Please input a valid lin position.")
+      }
+    }else if(!tax_glom_level %in% c("domain", "phylum", "class", "order", "family", "genus", "species")){
       stop("Unrecognized string passed to tax_glom_level. Please use one of species, genus, family, order, class, phylum, or domain.")
     }
     # agglomerate to level of taxonomy
-    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T)
+    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = T, lins=lins)
   }
 
   if(!glom_var %in% c("f_unique_to_query", "f_unique_weighted", "unique_intersect_bp", "n_unique_kmers")){
     # these are the only ones that make sense to me to agglomerate across levels of taxonomy.
     stop("The variable you supplied is not a valid glom_var. Please choose from f_unique_to_query, f_unique_weighted, unique_intersect_bp, n_unique_kmers.")
   }
+  if (lins==TRUE){
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
+      # temporarily rename the variable to "glom_var_tmp" so we can use the same code across all vars.
+      dplyr::rename(glom_var_tmp = dplyr::all_of(glom_var)) %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "glom_var_tmp") %>%
+      dplyr::mutate(lin = lineage) %>% # copy column to shorter name for better separate_wider prefix
+      tidyr::separate_wider_delim("lin", delim=";", names_sep="", names_repair="check_unique", cols_remove = F, too_few = "align_start") %>%
+      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+      dplyr::summarize(glom_var_tmp = sum(.data$glom_var_tmp)) %>%
+      dplyr::ungroup() %>%
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "glom_var_tmp")
 
-  taxonomy_annotate_df <- taxonomy_annotate_df %>%
-    # temporarily rename the variable to "glom_var_tmp" so we can use the same code across all vars.
-    dplyr::rename(glom_var_tmp = dplyr::all_of(glom_var)) %>%
-    dplyr::select("genome_accession", "lineage", "query_name", "glom_var_tmp") %>%
-    tidyr::separate(.data$lineage, into = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain"), sep = ";", remove = F, fill = "right") %>%
-    dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
-    dplyr::summarize(glom_var_tmp = sum(.data$glom_var_tmp)) %>%
-    dplyr::ungroup() %>%
-    tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
-    dplyr::select("lineage", "query_name", "glom_var_tmp")
-
+  }else{
+    tax_names = c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+    taxonomy_annotate_df <- taxonomy_annotate_df %>%
+      # temporarily rename the variable to "glom_var_tmp" so we can use the same code across all vars.
+      dplyr::rename(glom_var_tmp = dplyr::all_of(glom_var)) %>%
+      dplyr::select("genome_accession", "lineage", "query_name", "glom_var_tmp") %>%
+      tidyr::separate("lineage", into = tax_names, sep = ";", remove = F, fill = "right") %>%
+      dplyr::group_by_at(dplyr::vars(dplyr::all_of(agglom_cols))) %>%
+      dplyr::summarize(glom_var_tmp = sum(.data$glom_var_tmp)) %>%
+      dplyr::ungroup() %>%
+      tidyr::unite(col = "lineage", tidyselect::all_of(agglom_cols[-1]), sep = ";", remove = TRUE) %>%
+      dplyr::select("lineage", "query_name", "glom_var_tmp")
+  }
   # rename the glom_var_tmp back to whatever the glom_var actually was
   colnames(taxonomy_annotate_df) <- c("lineage", "query_name", glom_var)
 
@@ -133,10 +162,10 @@ tax_glom_taxonomy_annotate <- function(taxonomy_annotate_df, tax_glom_level = NU
 #' from_taxonomy_annotate_to_upset_inputs()
 #' }
 from_taxonomy_annotate_to_upset_inputs <- function(taxonomy_annotate_df,
-                                                   tax_glom_level = NULL){
+                                                   tax_glom_level = NULL, lins=FALSE){
 
   if(!is.null(tax_glom_level)){
-    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level)
+    taxonomy_annotate_df <- tax_glom_taxonomy_annotate(taxonomy_annotate_df, tax_glom_level = tax_glom_level, lins=lins)
   }
 
   # select only columns that are relevant
@@ -265,11 +294,9 @@ plot_taxonomy_annotate_upset <- function(upset_inputs, fill = NULL, palette = NU
 #' \dontrun{
 #' plot_taxonomy_annotate_sankey()
 #' }
-plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL, label = TRUE){
-  if(!is.null(tax_glom_level)){
-    agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F)
-  } else {
-    agglom_cols <- c("domain", "phylum", "class", "order", "family", "genus", "species", "strain")
+plot_taxonomy_annotate_sankey <- function(taxonomy_annotate_df, tax_glom_level = NULL, palette = NULL, label = TRUE, lins = FALSE){
+  agglom_cols <- make_agglom_cols(tax_glom_level = tax_glom_level, with_query_name = F, lins=lins)
+  if(is.null(tax_glom_level) & (lins ==FALSE)){
     # check if there are NAs in the strain column and emit a warning, as these will be dropped and the plot will look weird
     if(sum(is.na(taxonomy_annotate_df$strain)) > 0){
       stop("Some lineages are missing strain information. This will lead computation to fail for stat_parallel_sets_axes(). Use tax_glom_level = 'species' or a higher taxonomic rank to produce a plot")
